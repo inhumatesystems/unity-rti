@@ -1,0 +1,15 @@
+Library/
+*.csproj
+*.sln
+Logs/
+Temp/
+Build/
+Builds/
+UserSettings/
+Packages/com.inhumatesystems.rti/Samples~/
+obj/
+.vscode/
+tmp-update-dependencies/
+[Gg]enerated/
+mono_crash*
+/protobuf/

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package inhumate.unity.rti.proto;
+option csharp_namespace = "Inhumate.Unity.RTI.Proto";
+
+import "Vector3.proto";
+
+message NavMeshAgentState {
+    string id = 1;
+    Vector3 destination = 2;
+    float speed = 3;
+    float angular_speed = 4;
+}

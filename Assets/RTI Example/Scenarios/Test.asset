@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7cb681cd512107b29c4dcc100fa8434, type: 3}
+  m_Name: Test
+  m_EditorClassIdentifier: 
+  sceneName: RTITestScenario
+  description: 'A test. Nothing more.
+
+    That is all.'
+  parameters:
+  - name: name
+    label: label
+    description: description
+    type: 0
+    choices: 
+    defaultValue: default value
+  - name: text
+    label: 
+    description: description
+    type: 1
+    choices: 
+    defaultValue: default value
+  - name: switch
+    label: 
+    description: description
+    type: 4
+    choices: 
+    defaultValue: true
+  - name: checkbox
+    label: 
+    description: description
+    type: 5
+    choices: 
+    defaultValue: 
+  - name: float
+    label: 
+    description: description
+    type: 2
+    choices: 
+    defaultValue: 1.23
+  - name: integer
+    label: 
+    description: description
+    type: 3
+    choices: 
+    defaultValue: 345
+  - name: choice
+    label: 
+    description: description
+    type: 6
+    choices: foo|bar|baz
+    defaultValue: bar

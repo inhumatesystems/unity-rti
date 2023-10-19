@@ -1,0 +1,92 @@
+image: "unityci/editor:2022.1.3f1-base-1.0.1"
+
+variables:
+  REGISTRY_PROJECT_ID: "51392417"
+
+stages:
+- build
+# - test
+- trigger
+- release
+- publish
+
+default:
+  before_script:
+    - VERSION=${CI_COMMIT_TAG}
+    - "[ -z \"$VERSION\" ] && VERSION=0.0.${CI_PIPELINE_IID}"
+    - export VERSION
+
+build:
+  stage: build
+  script: 
+    - sed -i "s/0.0.1-dev-version/${VERSION}/g" Packages/*/package.json Packages/*/Runtime/RTIConnection.cs
+    - sed -i "s/PROJECT_ID/${REGISTRY_PROJECT_ID}/g" Packages/*inhumate*/package.json
+    - chmod +x scripts/ci-before-script.sh && scripts/ci-before-script.sh
+    - chmod +x scripts/linux_get_protobuf.sh && scripts/linux_get_protobuf.sh
+    - chmod +x scripts/generate.sh && scripts/generate.sh
+    - chmod +x scripts/build.sh && scripts/build.sh
+  cache:
+    key: "${CI_PROJECT_ID}-${CI_COMMIT_REF_SLUG}"
+    paths:
+     - "Library/"
+  artifacts:
+    paths:
+      - Build/*.tgz
+    expire_in: 1 week
+
+# test:
+#   stage: test
+#   script:
+#     - chmod +x scripts/ci-before-script.sh && scripts/ci-before-script.sh
+#     - chmod +x scripts/generate.sh && scripts/generate.sh
+#     - chmod +x scripts/test.sh && scripts/test.sh
+#   artifacts:
+#     reports:
+#       junit: "TestResults/*junit.xml"
+
+# trigger:
+#   stage: trigger
+#   trigger: inhumate/unity/integrationtest
+#   only:
+#     - master
+#     - main
+
+# release:
+#   stage: release
+#   image: python:latest
+#   only:
+#     - tags
+#   variables:
+#     GIT_STRATEGY: none
+#     S3_BUCKET: release.inhumatesystems.com
+#     S3_URL: s3.eu-north-1.amazonaws.com
+#   dependencies:
+#     - build
+#   script:
+#     - pip install awscli
+#     - "curl -X POST --header \"PRIVATE-TOKEN: ${PRIVATE_TOKEN}\" \
+#       -d tag_name=${VERSION} \
+#       -d description=\"Version ${VERSION}\" \
+#       https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/releases"
+#     - "for file in $(find . -type f); do \
+#         aws s3 cp $file s3://${S3_BUCKET}/unity/ ; \
+#         curl -X POST --header \"PRIVATE-TOKEN: ${PRIVATE_TOKEN}\" \
+#             -d name=\"$(basename $file)\" \
+#             -d url=\"https://${S3_URL}/${S3_BUCKET}/unity/$(basename $file)\" \
+#             https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/releases/${VERSION}/assets/links ; \
+#       done"
+
+publish unity:
+  stage: publish
+  image: node:16-slim
+  only:
+    - tags
+    - /^(release).*/
+  dependencies:
+    - build
+  script:
+    - tar xvfz Build/*.tgz
+    - cd package
+    - echo "registry=https://gitlab.com/api/v4/packages/npm/" >.npmrc
+    - echo "//gitlab.com/api/v4/projects/${REGISTRY_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >>.npmrc
+    - npm publish

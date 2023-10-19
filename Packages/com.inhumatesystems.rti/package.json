@@ -1,0 +1,25 @@
+{
+  "name": "com.inhumatesystems.rti",
+  "displayName": "Inhumate RTI Unity Client",
+  "description": "Inhumate RTI Unity Client - for multiplayer networking, co-simulation etc",
+  "version": "0.0.1-dev-version",
+  "unity": "2018.3",
+  "documentationUrl": "https://gitlab.com/inhumate/rti/-/wikis/Unity",
+  "changelogUrl": "https://gitlab.com/inhumate/rti/activity",
+  "licensesUrl": "https://gitlab.com/inhumate/rti/-/blob/master/LICENSE.txt",
+  "license": "Apache-2.0",
+  "samples": [
+    {
+      "displayName": "RTI Example",
+      "description": "Minimal RTI example",
+      "path": "Samples~/RTI Example"
+    }
+  ],
+  "dependencies": {
+    "com.dbrizov.naughtyattributes": "2.1.4",
+    "com.unity.splines": "1.0.1"
+  },
+  "publishConfig": {
+    "registry": "https://gitlab.com/api/v4/projects/PROJECT_ID/packages/npm/"
+  }
+}
