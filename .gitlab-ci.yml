@@ -1,4 +1,4 @@
-image: "unityci/editor:2022.1.3f1-base-1.0.1"
+image: "unityci/editor:2022.3.11f1-base-2.0.0"
 
 variables:
   REGISTRY_PROJECT_ID: "51392417"
@@ -19,6 +19,7 @@ default:
 build:
   stage: build
   script: 
+    - apt-get -qq update && apt-get -qq install unzip
     - sed -i "s/0.0.1-dev-version/${VERSION}/g" Packages/*/package.json Packages/*/Runtime/RTIConnection.cs
     - sed -i "s/PROJECT_ID/${REGISTRY_PROJECT_ID}/g" Packages/*inhumate*/package.json
     - chmod +x scripts/ci-before-script.sh && scripts/ci-before-script.sh
@@ -29,6 +30,7 @@ build:
     key: "${CI_PROJECT_ID}-${CI_COMMIT_REF_SLUG}"
     paths:
      - "Library/"
+     - "protobuf/"
   artifacts:
     paths:
       - Build/*.tgz
@@ -78,7 +80,7 @@ build:
 
 publish unity:
   stage: publish
-  image: node:16-slim
+  image: node:10-slim
   only:
     - tags
     - /^(release).*/
