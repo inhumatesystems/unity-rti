@@ -2,7 +2,7 @@
 
 cd "$(dirname $0)/.."
 
-if [ -e protobuf/protoc ]; then
+if [ -e protobuf/bin/protoc ]; then
     exit 0
 fi
 

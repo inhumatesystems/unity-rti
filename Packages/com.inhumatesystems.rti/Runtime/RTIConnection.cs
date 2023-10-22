@@ -20,10 +20,10 @@ namespace Inhumate.Unity.RTI {
 
         public bool polling = true;
 
-        [Tooltip("URL of RTI broker to connect to. Leave blank for default. May be overridden by GEISTT_RTI_URL environment variable or command-line.")]
+        [Tooltip("URL of RTI broker to connect to. Leave blank for default. May be overridden by INHUMATE_RTI_URL environment variable or command-line.")]
         public string url;
 
-        [Tooltip("Secret to use when connecting. Leave blank for default. May be overridden by GEISTT_RTI_SECRET environment variable or command-line.")]
+        [Tooltip("Secret to use when connecting. Leave blank for default. May be overridden by INHUMATE_RTI_SECRET environment variable or command-line.")]
         public string secret;
 
         public List<RTIScenario> scenarios = new List<RTIScenario>();
