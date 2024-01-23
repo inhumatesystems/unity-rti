@@ -30,6 +30,9 @@ namespace Inhumate.Unity.RTI {
         public RTIParameter[] parameters = new RTIParameter[] {};
 
         public Injection injection => concurrent || injections.Count == 0 ? null : injections[injections.Count - 1];
+
+        public event Action<Injection.Types.State> OnStateUpdated;
+
         protected List<Injection> injections = new List<Injection>();
         protected RTIInjectionBehaviour[] behaviours = new RTIInjectionBehaviour[] { };
         protected Dictionary<string, RTIInjectionBehaviour[]> injectionBehaviours = new Dictionary<string, RTIInjectionBehaviour[]>();
@@ -246,6 +249,7 @@ namespace Inhumate.Unity.RTI {
 
         protected void UpdateState(Injection injection, Injection.Types.State state) {
             injection.State = state;
+            OnStateUpdated?.Invoke(state);
             Publish(injection);
         }
 
