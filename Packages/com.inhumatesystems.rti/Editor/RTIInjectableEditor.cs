@@ -11,8 +11,12 @@ namespace Inhumate.Unity.RTI {
             var injectable = (RTIInjectable)target;
             if (Application.isPlaying) {
                 if (injectable.injection == null || injectable.concurrent) {
-                    if (GUILayout.Button("Inject")) {
-                        injectable.Inject(new InjectionOperation.Types.Inject { Disabled = true });
+                    var injectButtonTitle = 
+                        injectable.startMode == Injectable.Types.ControlMode.Immediate && injectable.endMode == Injectable.Types.ControlMode.Immediate ? "Inject & Go"
+                        : injectable.startMode == Injectable.Types.ControlMode.Immediate ? "Inject & Start"
+                        : "Inject";
+                    if (GUILayout.Button(injectButtonTitle)) {
+                        injectable.Inject(new InjectionOperation.Types.Inject { });
                     }
                 }
                 if (injectable.injection != null) {
@@ -20,7 +24,7 @@ namespace Inhumate.Unity.RTI {
                     var injection = injectable.injection;
                     EditorGUILayout.LabelField("State", $"{injection.State}");
                     if (injection.State == Injection.Types.State.Disabled
-                            && injectable.startMode == Injectable.Types.ControlMode.Immediate
+                            && injectable.startMode != Injectable.Types.ControlMode.Immediate
                             && GUILayout.Button("Enable")) {
                         injectable.EnableInjection(injection);
                     }
@@ -35,12 +39,12 @@ namespace Inhumate.Unity.RTI {
                         injectable.StartInjection(injection);
                     }
                     if (injection.State == Injection.Types.State.Running 
-                            && (injectable.endMode == Injectable.Types.ControlMode.Manual || injectable.endMode == Injectable.Types.ControlMode.Immediate) 
+                            && (injectable.endMode == Injectable.Types.ControlMode.Manual || injectable.endMode == Injectable.Types.ControlMode.AutoOrManual) 
                             && GUILayout.Button("Stop")) {
                         injectable.StopInjection(injection);
                     }
                     if (injection.State < Injection.Types.State.End
-                            && (injectable.endMode == Injectable.Types.ControlMode.Manual || injectable.endMode == Injectable.Types.ControlMode.Immediate || injection.State < Injection.Types.State.Running)
+                            && (injectable.endMode == Injectable.Types.ControlMode.Manual || injectable.endMode == Injectable.Types.ControlMode.AutoOrManual || injection.State < Injection.Types.State.Running)
                             && GUILayout.Button("Cancel")) {
                         injectable.CancelInjection(injection);
                     }

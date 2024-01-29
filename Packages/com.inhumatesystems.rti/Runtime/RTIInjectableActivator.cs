@@ -9,12 +9,12 @@ namespace Inhumate.Unity.RTI {
         public GameObject[] objects;
 
         public override void Begin() {
-            foreach (var o in objects) o.SetActive(true);
+            foreach (var o in objects) if (o != null) o.SetActive(true);
             base.Begin();
         }
 
         public override void End() {
-            foreach (var o in objects) o.SetActive(false);
+            foreach (var o in objects) if (o != null) o.SetActive(false);
             base.End();
         }
 
