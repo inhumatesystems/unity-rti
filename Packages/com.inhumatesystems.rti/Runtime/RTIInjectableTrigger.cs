@@ -12,9 +12,14 @@ namespace Inhumate.Unity.RTI {
             StartOnEnterEndOnExit,
             StartOnEnter,
             EndOnEnter,
+            EndOnExit,
+            EndOnEnterAny,
+            EndOnExitAny,
             //ResetOnEnter
         }
         public TriggerMode mode;
+
+        public Collider triggeredCollider { get; private set; }
 
         void Start() {
             Disable();
@@ -24,6 +29,7 @@ namespace Inhumate.Unity.RTI {
             foreach (var collider in GetComponentsInChildren<Collider>()) {
                 if (collider.isTrigger) collider.enabled = false;
             }
+            triggeredCollider = null;
         }
 
         public override bool Enable() {
@@ -38,7 +44,10 @@ namespace Inhumate.Unity.RTI {
             if (injectable != null) {
                 var behaviours = injectable.GetComponentsInChildren<RTIInjectionBehaviour>();
                 foreach (var behaviour in behaviours) {
-                    if (behaviour != this && !(behaviour is RTIInjectableTrigger)) behaviour.Begin();
+                    if (behaviour != this) {
+                        if (behaviour is RTIInjectableTrigger) ((RTIInjectableTrigger)behaviour).running = true;
+                        else behaviour.Begin();
+                    }
                 }
             }
             base.Begin();
@@ -49,7 +58,12 @@ namespace Inhumate.Unity.RTI {
             if (injectable != null) {
                 var behaviours = injectable.GetComponentsInChildren<RTIInjectionBehaviour>();
                 foreach (var behaviour in behaviours) {
-                    if (behaviour != this && !(behaviour is RTIInjectableTrigger)) behaviour.End();
+                    if (behaviour != this) {
+                        if (behaviour is RTIInjectableTrigger) {
+                            ((RTIInjectableTrigger)behaviour).running = false;
+                            behaviour.Disable();
+                        } else behaviour.End();
+                    }
                 }
             }
             base.End();
@@ -57,16 +71,27 @@ namespace Inhumate.Unity.RTI {
 
         void OnTriggerEnter(Collider other) {
             switch (mode) {
-                case TriggerMode.StartOnEnterEndOnExit:
                 case TriggerMode.StartOnEnter:
+                case TriggerMode.StartOnEnterEndOnExit:
                     var entity = other.GetComponentInParent<RTIEntity>();
                     if (entity != null) {
                         if (!string.IsNullOrEmpty(entity.title)) injectable.injection.Title = entity.title;
                         else if (entity.titleFromName) injectable.injection.Title = entity.name;
                     }
+                    foreach (var behaviour in injectable.GetComponentsInChildren<RTIInjectableTrigger>()) {
+                        behaviour.triggeredCollider = other;
+                    }
+                    if (mode != TriggerMode.StartOnEnterEndOnExit) {
+                        foreach (var collider in GetComponentsInChildren<Collider>()) {
+                            if (collider.isTrigger) collider.enabled = false;
+                        }
+                    }
                     Begin();
                     break;
                 case TriggerMode.EndOnEnter:
+                    if (other == triggeredCollider) End();
+                    break;
+                case TriggerMode.EndOnEnterAny:
                     End();
                     break;
                     // TODO Reset
@@ -74,9 +99,15 @@ namespace Inhumate.Unity.RTI {
         }
 
         void OnTriggerExit(Collider other) {
-            if (injectable == null || injectable.injection == null) return;
+            if (injectable == null || injectable.injection == null || !running) return;
             switch (mode) {
-                case TriggerMode.StartOnEnterEndOnExit: End(); break;
+                case TriggerMode.StartOnEnterEndOnExit:
+                case TriggerMode.EndOnExit:
+                    if (other == triggeredCollider) End();
+                    break;
+                case TriggerMode.EndOnExitAny:
+                    End();
+                    break;
             }
         }
 

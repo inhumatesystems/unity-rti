@@ -18,7 +18,7 @@ namespace Inhumate.Unity.RTI {
 
         public bool running { get; protected set; }
 
-        protected Injection injection;
+        public Injection injection { get; protected set; }
         protected RTIConnection RTI => RTIConnection.Instance;
 
         // Called when injection is injected.

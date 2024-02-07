@@ -27,7 +27,7 @@ namespace Inhumate.Unity.RTI {
         [TextArea(3, 10)]
         public string description;
 
-        public RTIParameter[] parameters = new RTIParameter[] {};
+        public RTIParameter[] parameters = new RTIParameter[] { };
 
         public Injection injection => concurrent || injections.Count == 0 ? null : injections[injections.Count - 1];
 
