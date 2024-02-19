@@ -19,6 +19,9 @@ namespace Inhumate.Unity.RTI {
         }
         public TriggerMode mode;
 
+        public string triggerTag;
+        public LayerMask triggerLayers = -1;
+
         public Collider triggeredCollider { get; private set; }
 
         void Start() {
@@ -70,6 +73,8 @@ namespace Inhumate.Unity.RTI {
         }
 
         void OnTriggerEnter(Collider other) {
+            if (!string.IsNullOrEmpty(triggerTag) && !other.CompareTag(triggerTag)) return;
+            if (triggerLayers != (triggerLayers | (1 << other.gameObject.layer))) return;
             switch (mode) {
                 case TriggerMode.StartOnEnter:
                 case TriggerMode.StartOnEnterEndOnExit:
