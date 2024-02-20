@@ -9,10 +9,9 @@ namespace Inhumate.Unity.Examples.RTI {
 
         public float bounceForce = 1000;
 
-        private RTIEntity entity;
-
         void Start() {
-            entity = GetComponent<RTIEntity>();
+            GetComponent<RTIEntity>().RegisterCommands(this);
+            /*
             entity.RegisterCommand(new Command {
                 Name = "Bounce",
                 Description = "Make me bounce"
@@ -21,7 +20,25 @@ namespace Inhumate.Unity.Examples.RTI {
                 return new CommandResponse { Message = "boing" };
             });
             entity.RegisterCommand(new Command { Name = "Boing" }, (command, exec) => { Bounce(); });
+            */
         }
+
+        [RTICommand]
+        void Boing() {
+            Bounce();
+        }
+
+        [RTICommand("Bounce", "Make me bounce")]
+        [RTICommandArgument("multiplier", "1", "float", "How much to bounce")]
+        void Bounce(Command command, ExecuteCommand exec) {
+            Bounce(float.Parse(command.GetArgumentValue(exec, "multiplier")));
+        }
+
+        [RTICommand]
+        CommandResponse BounceWithFeedback() {
+            Bounce();
+            return new CommandResponse { Message = "Weeeeeeee" };
+        }   
 
         void Bounce(float multiplier = 1) {
             var body = GetComponent<Rigidbody>();

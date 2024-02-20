@@ -10,6 +10,7 @@ namespace Inhumate.Unity.RTI {
     public class RTIConnectionEditor : Editor {
 
         bool showVersions;
+        bool showCommands;
 
         public override void OnInspectorGUI() {
             var connection = (RTIConnection)target;
@@ -39,6 +40,7 @@ namespace Inhumate.Unity.RTI {
                 var numClients = connection.Client.KnownClients.Count(c => c.Application == connection.Client.Application);
                 if (numClients > 1) EditorGUILayout.LabelField($"{numClients} {connection.Application} connected");
             }
+
             showVersions = EditorGUILayout.BeginFoldoutHeaderGroup(showVersions, "Versions");
             if (showVersions) {
                 EditorGUILayout.LabelField("Integration", RTIConnection.IntegrationVersion);
@@ -48,6 +50,19 @@ namespace Inhumate.Unity.RTI {
                 }
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
+
+            showCommands = EditorGUILayout.BeginFoldoutHeaderGroup(showCommands, "Commands");
+            if (showCommands) {
+                foreach (var command in connection.Commands) {
+                    if (command.Arguments.Count == 0 && GUILayout.Button(command.Name)) {
+                        connection.ExecuteCommandInternal(command.Name);
+                    } else if (command.Arguments.Count > 0) {
+                        EditorGUILayout.LabelField(command.Name, $"{command.Arguments.Count} arguments");
+                    }
+                }
+            }
+            EditorGUILayout.EndFoldoutHeaderGroup();
+
             this.DrawDefaultInspector();
         }
     }

@@ -49,6 +49,7 @@ namespace Inhumate.Unity.RTI {
                 Publish(current);
             }
         }
+
     }
 
 }

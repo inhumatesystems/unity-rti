@@ -11,6 +11,7 @@ namespace Inhumate.Unity.Examples.RTI {
         protected RTIConnection RTI => RTIConnection.Instance;
 
         void Start() {
+            RTI.RegisterCommands(this);
             RTI.RegisterCommand(new Command {
                 Name = "Log",
                 Description = "Log a message"
@@ -43,6 +44,24 @@ namespace Inhumate.Unity.Examples.RTI {
             yield return new WaitForSecondsRealtime(duration);
             Time.timeScale = 1;
             RTI.PublishCommandResponse(transactionId, new CommandResponse { Message = "zzz <yawn> oh hello" });
+        }
+
+        [RTICommand]
+        void DoStuff() {
+            Debug.Log("Doing stuff");
+        }
+
+        [RTICommand("DoItWrong")]
+        void DoItWrong(string name, int num) {
+            Debug.Log($"Can't be done: {name} {num}");
+        }
+
+        [RTICommand("Attr Sleep", "Sleeps for a while")]
+        [RTICommandArgument("duration", "1", "float", "How long to sleep for (seconds)")]
+        [RTICommandArgument("other param")]
+        CommandResponse Sleep2(Command command, ExecuteCommand exec) {
+            Sleep(float.Parse(command.GetArgumentValue(exec, "duration")), exec.TransactionId);
+            return null;
         }
 
     }

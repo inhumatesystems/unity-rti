@@ -39,6 +39,7 @@ namespace Inhumate.Unity.RTI {
 
         protected virtual void Start() {
             entity = GetComponent<RTIEntity>();
+            entity.RegisterCommands(this);
             if (!instances.ContainsKey(entity.id)) instances[entity.id] = new List<RTIEntityBehaviour<T>>();
             if (!instances[entity.id].Contains(this)) instances[entity.id].Add(this);
             if (!subscribed) {

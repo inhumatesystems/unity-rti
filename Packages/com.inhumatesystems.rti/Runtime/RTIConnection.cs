@@ -9,6 +9,7 @@ using Inhumate.RTI.Proto;
 using Google.Protobuf;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Reflection;
 
 namespace Inhumate.Unity.RTI {
 
@@ -97,6 +98,7 @@ namespace Inhumate.Unity.RTI {
         private Dictionary<string, RTIGeometry> geometries = new Dictionary<string, RTIGeometry>();
         private Dictionary<string, RTIInjectable> injectables = new Dictionary<string, RTIInjectable>();
 
+        public Command[] Commands => commands.Values.ToArray();
         private Dictionary<string, Command> commands = new Dictionary<string, Command>();
         public delegate CommandResponse CommandHandler(Command command, ExecuteCommand exec);
         private Dictionary<string, CommandHandler> commandHandlers = new Dictionary<string, CommandHandler>();
@@ -900,12 +902,12 @@ namespace Inhumate.Unity.RTI {
 
         private void OnCommands(string channelName, Commands message) {
             switch (message.WhichCase) {
-                case Commands.WhichOneofCase.RequestCommands:
+                case Inhumate.RTI.Proto.Commands.WhichOneofCase.RequestCommands:
                     foreach (var command in commands.Values) {
                         Publish(channelName, new Commands { Command = command });
                     }
                     break;
-                case Commands.WhichOneofCase.Execute: {
+                case Inhumate.RTI.Proto.Commands.WhichOneofCase.Execute: {
                         CommandResponse response = null;
                         var name = message.Execute.Name.ToLower();
                         var specific = false;
@@ -929,6 +931,65 @@ namespace Inhumate.Unity.RTI {
                         }
                         break;
                     }
+            }
+        }
+
+        public void ExecuteCommandInternal(string name, ExecuteCommand executeCommand = null) {
+            name = name.ToLower();
+            if (executeCommand == null) executeCommand = new ExecuteCommand { Name = name };
+            if (commands.TryGetValue(name, out Command command) && commandHandlers.TryGetValue(name, out CommandHandler handler)) {
+                var response = handler(command, executeCommand);
+                if (response.Failed) {
+                    Debug.LogWarning($"Command {name} failed: {response.Message}", this);
+                } else if (!string.IsNullOrEmpty(response.Message)) {
+                    Debug.Log($"Command {name}: {response.Message}", this);
+                }
+            } else {
+                Debug.LogWarning($"Unknown command {name}", this);
+            }
+        }
+
+        public void RegisterCommands(MonoBehaviour behaviour) {
+            var methods = behaviour.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            foreach (var method in methods) {
+                var commandAttribute = method.GetCustomAttribute<RTICommandAttribute>();
+                if (commandAttribute != null) {
+                    var command = new Command { Name = commandAttribute.Name };
+                    if (string.IsNullOrWhiteSpace(command.Name)) command.Name = method.Name;
+                    var argumentAttributes = method.GetCustomAttributes<RTICommandArgumentAttribute>();
+                    foreach (var argumentAttribute in argumentAttributes) {
+                        argumentAttribute.AddToCommand(command);
+                    }
+                    if (typeof(CommandResponse).IsAssignableFrom(method.ReturnType)) {
+                        if (method.GetParameters().Length == 2) {
+                            RegisterCommand(command, (cmd, exe) => {
+                                return (CommandResponse)method.Invoke(behaviour, new object[] { cmd, exe });
+                            });
+                        } else if (method.GetParameters().Length == 0) {
+                            RegisterCommand(command, (cmd, exe) => {
+                                return (CommandResponse)method.Invoke(behaviour, new object[] { });
+                            });
+                        } else {
+                            Debug.LogError($"Invalid command method {method.Name} in {behaviour.GetType().Name}: parameters");
+                        }
+                    } else if (method.ReturnType == typeof(void)) {
+                        if (method.GetParameters().Length == 2) {
+                            RegisterCommand(command, (cmd, exe) => {
+                                method.Invoke(behaviour, new object[] { cmd, exe });
+                                return new CommandResponse();
+                            });
+                        } else if (method.GetParameters().Length == 0) {
+                            RegisterCommand(command, (cmd, exe) => {
+                                method.Invoke(behaviour, new object[] { });
+                                return new CommandResponse();
+                            });
+                        } else {
+                            Debug.LogError($"Invalid command method {method.Name} in {behaviour.GetType().Name}: parameters");
+                        }
+                    } else {
+                        Debug.LogError($"Invalid command method {method.Name} in {behaviour.GetType().Name}: return type");
+                    }
+                }
             }
         }
 

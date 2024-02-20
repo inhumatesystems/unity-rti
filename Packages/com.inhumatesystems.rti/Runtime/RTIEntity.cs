@@ -5,6 +5,7 @@ using Inhumate.RTI.Proto;
 using UnityEngine;
 using NaughtyAttributes;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Inhumate.Unity.RTI {
 
@@ -54,6 +55,7 @@ namespace Inhumate.Unity.RTI {
         public event Action OnOwnershipChanged;
 
         public string CommandsChannelName => $"{RTIConstants.CommandsChannel}/{id}";
+        public Command[] Commands => commands.Values.ToArray();
         private Dictionary<string, Command> commands = new Dictionary<string, Command>();
         private Dictionary<string, RTIConnection.CommandHandler> commandHandlers = new Dictionary<string, RTIConnection.CommandHandler>();
         private UntypedListener commandsListener;
@@ -64,6 +66,50 @@ namespace Inhumate.Unity.RTI {
         private bool updateRequested;
         public void RequestUpdate() {
             updateRequested = true;
+        }
+
+        public void RegisterCommands(MonoBehaviour behaviour) {
+            var methods = behaviour.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            foreach (var method in methods) {
+                var commandAttribute = method.GetCustomAttribute<RTICommandAttribute>();
+                if (commandAttribute != null) {
+                    var command = new Command { Name = commandAttribute.Name };
+                    if (string.IsNullOrWhiteSpace(command.Name)) command.Name = method.Name;
+                    var argumentAttributes = method.GetCustomAttributes<RTICommandArgumentAttribute>();
+                    foreach (var argumentAttribute in argumentAttributes) {
+                        argumentAttribute.AddToCommand(command);
+                    }
+                    if (typeof(CommandResponse).IsAssignableFrom(method.ReturnType)) {
+                        if (method.GetParameters().Length == 2) {
+                            RegisterCommand(command, (cmd, exe) => {
+                                return (CommandResponse)method.Invoke(behaviour, new object[] { cmd, exe });
+                            });
+                        } else if (method.GetParameters().Length == 0) {
+                            RegisterCommand(command, (cmd, exe) => {
+                                return (CommandResponse)method.Invoke(behaviour, new object[] { });
+                            });
+                        } else {
+                            Debug.LogError($"Invalid entity command method {method.Name} in {behaviour.GetType().Name}: parameters");
+                        }
+                    } else if (method.ReturnType == typeof(void)) {
+                        if (method.GetParameters().Length == 2) {
+                            RegisterCommand(command, (cmd, exe) => {
+                                method.Invoke(behaviour, new object[] { cmd, exe });
+                                return new CommandResponse();
+                            });
+                        } else if (method.GetParameters().Length == 0) {
+                            RegisterCommand(command, (cmd, exe) => {
+                                method.Invoke(behaviour, new object[] { });
+                                return new CommandResponse();
+                            });
+                        } else {
+                            Debug.LogError($"Invalid entity command method {method.Name} in {behaviour.GetType().Name}: parameters");
+                        }
+                    } else {
+                        Debug.LogError($"Invalid entity command method {method.Name} in {behaviour.GetType().Name}: return type");
+                    }
+                }
+            }
         }
 
         public bool RegisterCommand(Command command, RTIConnection.DefaultResponseCommandHandler handler) {
@@ -190,12 +236,12 @@ namespace Inhumate.Unity.RTI {
         void OnCommandsMessage(string channelName, Commands message) {
             if (!isActiveAndEnabled || !owned) return;
             switch (message.WhichCase) {
-                case Commands.WhichOneofCase.RequestCommands:
+                case Inhumate.RTI.Proto.Commands.WhichOneofCase.RequestCommands:
                     foreach (var command in commands.Values) {
                         RTI.Publish(channelName, new Commands { Command = command });
                     }
                     break;
-                case Commands.WhichOneofCase.Execute: {
+                case Inhumate.RTI.Proto.Commands.WhichOneofCase.Execute: {
                         CommandResponse response = null;
                         if (commands.TryGetValue(message.Execute.Name.ToLower(), out Command command) && commandHandlers.TryGetValue(message.Execute.Name.ToLower(), out RTIConnection.CommandHandler handler)) {
                             response = handler(command, message.Execute);
@@ -208,6 +254,21 @@ namespace Inhumate.Unity.RTI {
                         }
                         break;
                     }
+            }
+        }
+
+        public void ExecuteCommandInternal(string name, ExecuteCommand executeCommand = null) {
+            name = name.ToLower();
+            if (executeCommand == null) executeCommand = new ExecuteCommand { Name = name };
+            if (commands.TryGetValue(name, out Command command) && commandHandlers.TryGetValue(name, out RTIConnection.CommandHandler handler)) {
+                var response = handler(command, executeCommand);
+                if (response.Failed) {
+                    Debug.LogWarning($"Command {name} failed: {response.Message}", this);
+                } else if (!string.IsNullOrEmpty(response.Message)) {
+                    Debug.Log($"Command {name}: {response.Message}", this);
+                }
+            } else {
+                Debug.LogWarning($"Unknown entity command {name}", this);
             }
         }
 

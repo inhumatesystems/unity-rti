@@ -6,6 +6,8 @@ namespace Inhumate.Unity.RTI {
     [CustomEditor(typeof(RTIEntity))]
     public class RTIEntityEditor : Editor {
 
+        bool showCommands;
+
         public override void OnInspectorGUI() {
             var entity = (RTIEntity)target;
             if (Application.isPlaying) {
@@ -25,6 +27,19 @@ namespace Inhumate.Unity.RTI {
                     }
                     EditorGUILayout.TextField("Owner Client ID", entity.ownerClientId);
                 }
+
+                showCommands = EditorGUILayout.BeginFoldoutHeaderGroup(showCommands, "Commands");
+                if (showCommands) {
+                    foreach (var command in entity.Commands) {
+                        if (command.Arguments.Count == 0 && GUILayout.Button(command.Name)) {
+                            entity.ExecuteCommandInternal(command.Name);
+                        } else if (command.Arguments.Count > 0) {
+                            EditorGUILayout.LabelField(command.Name, $"{command.Arguments.Count} arguments");
+                        }
+                    }
+                }
+                EditorGUILayout.EndFoldoutHeaderGroup();
+
             }
             this.DrawDefaultInspector();
         }
