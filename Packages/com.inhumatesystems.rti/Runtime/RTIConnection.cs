@@ -947,6 +947,7 @@ namespace Inhumate.Unity.RTI {
             } else {
                 commands[name] = command;
                 commandHandlers[name] = handler;
+                WhenConnectedOnce(() => Publish(RTIConstants.CommandsChannel, new Commands { Command = command }));
                 return true;
             }
         }
