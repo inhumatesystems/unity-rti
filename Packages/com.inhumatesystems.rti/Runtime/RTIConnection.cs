@@ -10,6 +10,7 @@ using Google.Protobuf;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Reflection;
+using UnityEditor.MemoryProfiler;
 
 namespace Inhumate.Unity.RTI {
 
@@ -44,15 +45,16 @@ namespace Inhumate.Unity.RTI {
         public int maxPollCount = 100;
 
         public string timeSyncMasterClientId { get; private set; }
-        private float lastReceivedTimeSyncTime;
         private float lastTimeSyncTime;
         public bool IsTimeSyncMaster => rti != null && timeSyncMasterClientId == rti.ClientId;
         private bool inhibitTimeSyncMaster;
 
+        private static int mainThreadId;
         public static RTIConnection Instance {
             get {
                 if (_instance == null && !_quitting) {
                     _instance = new GameObject("RTI Connection").AddComponent<RTIConnection>();
+                    mainThreadId = Thread.CurrentThread.ManagedThreadId;
                 }
                 return _instance;
             }
@@ -342,8 +344,12 @@ namespace Inhumate.Unity.RTI {
             RunOrQueue(() => { OnDisconnected?.Invoke(); });
         }
 
+        private bool warnedConnection = false;
         private void OnRtiError(string channel, Exception ex) {
-            if (!quitting) Debug.LogWarning($"RTI error {channel} {ex}");
+            if (!quitting && (channel != "connection" || everConnected || !warnedConnection)) {
+                Debug.LogWarning($"RTI error {channel} {ex}");
+                if (channel == "connection") warnedConnection = true;
+            }
             LastErrorChannel = channel;
             LastError = ex;
         }
@@ -532,7 +538,6 @@ namespace Inhumate.Unity.RTI {
                 case RuntimeControl.ControlOneofCase.TimeSync: {
                         var wasTimeSyncMaster = IsTimeSyncMaster;
                         timeSyncMasterClientId = message.TimeSync.MasterClientId;
-                        lastReceivedTimeSyncTime = Time.unscaledTime;
                         var diff = time - (float)message.TimeSync.Time;
                         if (Math.Abs(diff) > 0.5f) {
                             if (debugRuntimeControl) Debug.LogWarning($"Time sync diff {diff}");
@@ -1142,7 +1147,7 @@ namespace Inhumate.Unity.RTI {
         }
 
         public void RunOrQueue(Action action) {
-            if (rti.Polling) action?.Invoke();
+            if (rti.Polling && Thread.CurrentThread.ManagedThreadId == mainThreadId) action?.Invoke();
             else QueueOnMainThread(action);
         }
 
