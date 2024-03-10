@@ -42,6 +42,18 @@ namespace Inhumate.Unity.RTI {
 
             }
             this.DrawDefaultInspector();
+            if (!Application.isPlaying) {
+                if (GUILayout.Button("Set dimensons from renderers")) {
+                    var bounds = entity.GetBoundsFromRenderers();
+                    entity.size = new Vector3(bounds.size.x, bounds.size.y, bounds.size.z);
+                    entity.center = new Vector3(bounds.center.x, bounds.center.y, bounds.center.z);
+                }
+                if (GUILayout.Button("Set dimensions from colliders")) {
+                    var bounds = entity.GetBoundsFromColliders();
+                    entity.size = new Vector3(bounds.size.x, bounds.size.y, bounds.size.z);
+                    entity.center = new Vector3(bounds.center.x, bounds.center.y, bounds.center.z);
+                }
+            }
         }
     }
 }

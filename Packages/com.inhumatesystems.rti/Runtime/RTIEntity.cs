@@ -15,8 +15,8 @@ namespace Inhumate.Unity.RTI {
         public EntityCategory category;
         public EntityDomain domain;
         public LVCCategory lvc;
-        public Vector3 size;
         public Vector3 center;
+        public Vector3 size;
         public UnityEngine.Color color;
         public bool titleFromName = true;
         [HideIf("titleFromName")]
@@ -182,6 +182,9 @@ namespace Inhumate.Unity.RTI {
         }
 
         void Start() {
+            if (RTI.GetEntityById(id)) {
+                Debug.LogWarning($"Entity {id} has already been registered", this);
+            }
             RTI.RegisterEntity(this);
             RTI.Client.RegisterChannel(new Channel {
                 Name = CommandsChannelName,
@@ -313,6 +316,49 @@ namespace Inhumate.Unity.RTI {
                 ownCommandsListener = null;
             }
             RTI.UnregisterEntity(this);
+        }
+
+        public Bounds GetBoundsFromRenderers() {
+            var b = new Bounds(Vector3.zero, Vector3.zero);
+            RecurseEncapsulate(transform, ref b);
+            return b;
+
+            void RecurseEncapsulate(Transform child, ref Bounds bounds) {
+                var mesh = child.GetComponent<MeshFilter>();
+                if (mesh && mesh.sharedMesh) {
+                    var lsBounds = mesh.sharedMesh.bounds;
+                    var wsMin = child.TransformPoint(lsBounds.center - lsBounds.extents);
+                    var wsMax = child.TransformPoint(lsBounds.center + lsBounds.extents);
+                    bounds.Encapsulate(transform.InverseTransformPoint(wsMin));
+                    bounds.Encapsulate(transform.InverseTransformPoint(wsMax));
+                }
+                foreach (Transform grandChild in child.transform) {
+                    RecurseEncapsulate(grandChild, ref bounds);
+                }
+            }
+        }
+
+        public Bounds GetBoundsFromColliders() {
+            var b = new Bounds(Vector3.zero, Vector3.zero);
+            RecurseEncapsulate(transform, ref b);
+            return b;
+
+            void RecurseEncapsulate(Transform child, ref Bounds bounds) {
+                var collider = child.GetComponent<Collider>();
+                if (collider) {
+                    if (collider is BoxCollider) {
+                        BoxCollider box = (BoxCollider)collider;
+                        bounds.Encapsulate(box.center - box.size / 2);
+                        bounds.Encapsulate(box.center + box.size / 2);
+                    } else {
+                        bounds.Encapsulate(transform.InverseTransformPoint(collider.bounds.center - collider.bounds.extents));
+                        bounds.Encapsulate(transform.InverseTransformPoint(collider.bounds.center + collider.bounds.extents));
+                    }
+                }
+                foreach (Transform grandChild in child.transform) {
+                    RecurseEncapsulate(grandChild, ref bounds);
+                }
+            }
         }
 
         internal EntityOperation.Types.EntityData EntityData {

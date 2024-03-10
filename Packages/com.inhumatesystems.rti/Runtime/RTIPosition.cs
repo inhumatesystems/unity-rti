@@ -12,6 +12,8 @@ namespace Inhumate.Unity.RTI {
         [ShowIf("publish")]
         public float updateInterval = 1f;
         [ShowIf("publish")]
+        public float minPublishInterval = 10f;
+        [ShowIf("publish")]
         public float positionThreshold = 0.001f;
         [ShowIf("publish")]
         public float rotationThreshold = 0.01f;
@@ -152,18 +154,19 @@ namespace Inhumate.Unity.RTI {
             Vector3? localVelocity = null;
             if (body != null && !body.isKinematic) {
                 localVelocity = transform.InverseTransformDirection(body.velocity);
-            } else if (lastVelocityPosition.sqrMagnitude > float.Epsilon && lastVelocityTime > float.Epsilon && Time.time > lastVelocityTime) {
-                Vector3 velocity = (transform.position - lastVelocityPosition) / (Time.time - lastVelocityTime);
+            } else if (lastVelocityPosition.sqrMagnitude > float.Epsilon && lastVelocityTime > float.Epsilon && Time.fixedTime > lastVelocityTime) {
+                Vector3 velocity = (transform.position - lastVelocityPosition) / (Time.fixedTime - lastVelocityTime);
                 localVelocity = transform.InverseTransformDirection(velocity);
             }
 
-            if (publish && publishing && Time.time - lastPublishTime > updateInterval
-                    && (positionThreshold < float.Epsilon || rotationThreshold < float.Epsilon || velocityThreshold < float.Epsilon
+            if (publish && publishing && Time.fixedTime - lastPublishTime > updateInterval
+                    && (Time.fixedTime - lastPublishTime > minPublishInterval 
+                        || positionThreshold < float.Epsilon || rotationThreshold < float.Epsilon || velocityThreshold < float.Epsilon
                         || (transform.position - lastPosition).magnitude > positionThreshold
                         || Quaternion.Angle(transform.rotation, lastRotation) > rotationThreshold
                         || (localVelocity.HasValue && lastVelocity.HasValue && (localVelocity.Value - lastVelocity.Value).magnitude > velocityThreshold)
                     )) {
-                lastPublishTime = Time.time;
+                lastPublishTime = Time.fixedTime;
                 var position = PositionMessageFromTransform(transform);
                 position.Id = entity.id;
                 if (localVelocity.HasValue) {
@@ -179,7 +182,7 @@ namespace Inhumate.Unity.RTI {
                     }
                     lastVelocity = localVelocity;
                 }
-                if (body != null && !body.isKinematic && LocalToRTIVelocity == null) {
+                if (body != null && !body.isKinematic) {
                     Vector3 localAngularVelocity = transform.InverseTransformDirection(body.angularVelocity) * 180.0f / Mathf.PI;
                     if (LocalToRTIAngularVelocity != null) {
                         position.AngularVelocity = LocalToRTIAngularVelocity(localAngularVelocity);
@@ -196,21 +199,21 @@ namespace Inhumate.Unity.RTI {
                 }
                 Publish(position);
                 lastPosition = transform.position;
-                lastPositionTime = Time.time;
+                lastPositionTime = Time.fixedTime;
                 lastRotation = transform.rotation;
-                lastRotationTime = Time.time;
+                lastRotationTime = Time.fixedTime;
             } else if (receive && receiving && interpolate) {
                 if (lastAcceleration.HasValue && lastVelocity.HasValue) {
                     lastVelocity += lastAcceleration * Time.deltaTime;
                 }
                 Vector3 targetPosition = transform.position;
-                if (Time.time - lastPositionTime < maxInterpolateInterval) {
+                if (Time.fixedTime - lastPositionTime < maxInterpolateInterval) {
                     if (lastPositionTime > 0 && lastVelocity.HasValue) {
                         // Interpolate using velocity
-                        targetPosition = lastPosition + transform.TransformDirection(lastVelocity.Value * (Time.time - lastPositionTime));
+                        targetPosition = lastPosition + transform.TransformDirection(lastVelocity.Value * (Time.fixedTime - lastPositionTime));
                     } else if (lastPositionTime > 0 && previousPositionTime > 0 && lastPositionTime - previousPositionTime > 1e-5f && lastPositionTime - previousPositionTime < updateInterval * 2.5f) {
                         // or else lerp based on last and previous position
-                        targetPosition = Vector3.Lerp(lastPosition, lastPosition + (lastPosition - previousPosition), (Time.time - lastPositionTime) / (lastPositionTime - previousPositionTime));
+                        targetPosition = Vector3.Lerp(lastPosition, lastPosition + (lastPosition - previousPosition), (Time.fixedTime - lastPositionTime) / (lastPositionTime - previousPositionTime));
                     } else if (lastPositionTime > 0) {
                         // or else just teleport
                         targetPosition = lastPosition;
@@ -224,7 +227,7 @@ namespace Inhumate.Unity.RTI {
                 transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * 10f / positionSmoothing);
 
                 Quaternion targetRotation = transform.rotation;
-                if (Time.time - lastRotationTime < maxInterpolateInterval) {
+                if (Time.fixedTime - lastRotationTime < maxInterpolateInterval) {
                     if (lastRotationTime > 0 && lastAngularVelocity.HasValue) {
                         // Interpolate using angular velocity
                         targetRotation = Quaternion.Euler(lastAngularVelocity.Value * (Time.time - lastRotationTime)) * lastRotation;
@@ -243,9 +246,9 @@ namespace Inhumate.Unity.RTI {
                 }
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f / rotationSmoothing);
             }
-            if (Time.time - lastVelocityTime > 2 * Time.fixedDeltaTime || Time.time < lastVelocityTime) {
+            if (Time.fixedTime - lastVelocityTime >= 10 * Time.fixedDeltaTime || Time.fixedTime < lastVelocityTime) {
                 lastVelocityPosition = transform.position;
-                lastVelocityTime = Time.time;
+                lastVelocityTime = Time.fixedTime;
             }
         }
 
