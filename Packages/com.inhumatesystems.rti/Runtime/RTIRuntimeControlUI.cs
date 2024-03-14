@@ -47,7 +47,9 @@ namespace Inhumate.Unity.RTI {
                 scenarioDropdown.ClearOptions();
                 var names = new List<string>();
                 if (RTI.scenarios.Count > 0) {
-                    foreach (var scenario in RTI.scenarios) names.Add(scenario.name);
+                    foreach (var scenario in RTI.scenarios) {
+                        if (scenario != null && !string.IsNullOrWhiteSpace(scenario.name)) names.Add(scenario.name);
+                    }
                 }
                 foreach (var name in RTI.scenarioNames) if (!names.Contains(name)) names.Add(name);
                 if (names.Count == 0) {

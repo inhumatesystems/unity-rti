@@ -377,7 +377,7 @@ namespace Inhumate.Unity.RTI {
                         var sceneName = message.LoadScenario.Name;
                         RTIScenario scenarioToLoad = null;
                         foreach (var scenario in scenarios) {
-                            if (scenario.name == message.LoadScenario.Name) {
+                            if (scenario != null && scenario.name == message.LoadScenario.Name) {
                                 sceneName = scenario.sceneName;
                                 scenarioToLoad = scenario;
                                 break;
@@ -598,7 +598,7 @@ namespace Inhumate.Unity.RTI {
 
             if (scenarios.Count > 0 || scenarioNames.Count > 0) {
                 foreach (var scenario in scenarios) {
-                    if (!mentionedScenario.ContainsKey(scenario.name)) {
+                    if (scenario != null && !mentionedScenario.ContainsKey(scenario.name)) {
                         rti.Publish(RTIConstants.ScenariosChannel, new Scenarios {
                             Scenario = scenario.ToProto()
                         });
