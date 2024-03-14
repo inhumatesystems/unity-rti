@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Threading;
 using Inhumate.RTI.Client;
 using Inhumate.RTI.Proto;
@@ -10,7 +9,6 @@ using Google.Protobuf;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Reflection;
-using UnityEditor.MemoryProfiler;
 
 namespace Inhumate.Unity.RTI {
 
