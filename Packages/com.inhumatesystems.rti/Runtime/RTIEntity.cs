@@ -390,7 +390,7 @@ namespace Inhumate.Unity.RTI {
                         },
                     Color = col,
                     Title = titleFromName ? name.Replace("(Clone)", "") : !string.IsNullOrWhiteSpace(title) ? title : "",
-                    Position = RTIPosition.PositionMessageFromTransform(this.transform),
+                    Position = GetComponent<RTIPosition>() != null ? RTIPosition.PositionMessageFromTransform(this.transform) : null,
                     Disabled = !enabled || !gameObject.activeInHierarchy
                 };
             }
