@@ -1,11 +1,12 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using NaughtyAttributes.Editor;
 
 namespace Inhumate.Unity.RTI {
 
     [CustomEditor(typeof(RTISpawner))]
-    public class RTISpawnerEditor : Editor {
+    public class RTISpawnerEditor : NaughtyInspector {
         public override void OnInspectorGUI() {
             RTISpawner spawner = (RTISpawner)target;
             GUILayout.Label("Spawnable Entities");
@@ -56,7 +57,7 @@ namespace Inhumate.Unity.RTI {
                     break;
             }
 
-            this.DrawDefaultInspector();
+            base.OnInspectorGUI();
         }
 
     }

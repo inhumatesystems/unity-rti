@@ -2,15 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
 
 namespace Inhumate.Unity.RTI {
 
     [RequireComponent(typeof(NavMeshAgent))]
-    public class RTINavMeshAgent : RTIEntityBehaviour<Proto.NavMeshAgentState> {
+    public class RTINavMeshAgent : RTIEntityStateBehaviour<Proto.NavMeshAgentState> {
 
-        public override string ChannelName => RTIConstants.InternalChannelPrefix + "navmeshagent";
-        public override bool Stateless => true;
+        public override string ChannelName => RTIChannel.InternalPrefix + "navmeshagent";
 
         public float updateInterval = 1f;
         public float destinationThreshold = 0.1f;
@@ -36,7 +35,7 @@ namespace Inhumate.Unity.RTI {
         }
 
         void Update() {
-            if (entity.created && publishing && Time.time - lastPublishTime > updateInterval
+            if (entity.published && publishing && Time.time - lastPublishTime > updateInterval
                     && (current == null || (agent.destination - current.Destination.ToVector3()).magnitude > destinationThreshold
                     || Mathf.Abs(agent.speed - current.Speed) > speedThreshold || Mathf.Abs(agent.angularSpeed - current.AngularSpeed) > angularSpeedThreshold)) {
                 lastPublishTime = Time.time;

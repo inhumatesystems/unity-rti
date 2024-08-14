@@ -1,10 +1,11 @@
 using UnityEngine;
 using UnityEditor;
+using NaughtyAttributes.Editor;
 
 namespace Inhumate.Unity.RTI {
 
     [CustomEditor(typeof(RTIEntity))]
-    public class RTIEntityEditor : Editor {
+    public class RTIEntityEditor : NaughtyInspector {
 
         bool showCommands;
 
@@ -15,9 +16,10 @@ namespace Inhumate.Unity.RTI {
                 var flags = "";
                 if (entity.persistent) flags += ", Persistent";
                 if (entity.owned) flags += ", Owned";
-                if (entity.created) flags += ", Created";
+                if (entity.published) flags += ", Published";
                 if (entity.publishing) flags += ", Publishing";
                 if (entity.receiving) flags += ", Receiving";
+                if (entity.deleted) flags += ", Deleted";
                 if (flags.Length > 0) {
                     EditorGUILayout.LabelField(flags.Substring(2).Trim());
                 }
@@ -41,7 +43,9 @@ namespace Inhumate.Unity.RTI {
                 EditorGUILayout.EndFoldoutHeaderGroup();
 
             }
-            this.DrawDefaultInspector();
+            
+            base.OnInspectorGUI();
+
             if (!Application.isPlaying) {
                 if (GUILayout.Button("Set dimensons from renderers")) {
                     var bounds = entity.GetBoundsFromRenderers();
@@ -52,6 +56,12 @@ namespace Inhumate.Unity.RTI {
                     var bounds = entity.GetBoundsFromColliders();
                     entity.size = new Vector3(bounds.size.x, bounds.size.y, bounds.size.z);
                     entity.center = new Vector3(bounds.center.x, bounds.center.y, bounds.center.z);
+                }
+            } else {
+                if (!entity.owned) {
+                    if (GUILayout.Button("Assume Ownership")) {
+                        entity.AssumeOwnership();
+                    }
                 }
             }
         }

@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 using UnityEngine.Splines;
@@ -33,7 +33,7 @@ namespace Inhumate.Unity.RTI {
         public Coordinates coordinates;
 
         public string type;
-        public GeometryOperation.Types.Category category;
+        public Geometry.Types.Category category;
 
         public UnityEngine.Color color;
         [Range(0, 1)]
@@ -49,16 +49,11 @@ namespace Inhumate.Unity.RTI {
 
         public float lineWidth = 1f;
 
-        public bool hidden = false;
-
         public string id;
         public override string Id => id;
 
-        private bool publishedHidden;
-
         void Awake() {
             if (string.IsNullOrWhiteSpace(id)) id = GenerateId();
-            publishedHidden = hidden;
         }
 
         string GenerateId() {
@@ -73,44 +68,28 @@ namespace Inhumate.Unity.RTI {
             return RTI.Application + path;
         }
 
-        protected override void Update() {
-            if (hidden != publishedHidden && RTI.IsConnected) {
-                publishedHidden = hidden;
-                var message = new GeometryOperation {
-                    Id = Id,
-                    ClientId = RTI.ClientId,
-                };
-                if (hidden) {
-                    message.Hide = new Google.Protobuf.WellKnownTypes.Empty();
-                } else {
-                    message.Show = new Google.Protobuf.WellKnownTypes.Empty();
-                }
-                RTI.Publish(RTIConstants.GeometryChannel, message);
-            }
-            base.Update();
-        }
-
         void OnEnable() {
-            if (owned && created && RTI.IsConnected) PublishUpdate();
+            if (owned && published && RTI.IsConnected) Publish();
         }
 
         void OnDisable() {
-            if (owned && created && RTI.IsConnected) PublishUpdate();
+            if (owned && published && RTI.IsConnected) Publish();
         }
 
-        internal override GeometryOperation.Types.Geometry GeometryData {
+        internal override Geometry GeometryData {
             get {
                 useLocalCoordinates = coordinates == Coordinates.LocalAndGeodetic || coordinates == Coordinates.Local;
                 useGeodeticCoordinates = coordinates == Coordinates.LocalAndGeodetic || coordinates == Coordinates.Geodetic;
-                var geometry = new GeometryOperation.Types.Geometry {
+                var geometry = new Geometry {
+                    Id = Id,
+                    OwnerClientId = RTI.ClientId,
                     Color = GetColor(color),
                     Transparency = 1 - opacity,
                     Title = !string.IsNullOrWhiteSpace(title) ? title : titleFromName ? name : "",
                     LabelColor = GetColor(labelColor),
                     LabelTransparency = 1 - labelOpacity,
                     Wireframe = wireframe,
-                    LineWidth = lineWidth,
-                    Hidden = hidden || !enabled || !gameObject.activeInHierarchy
+                    LineWidth = lineWidth
                 };
                 GeometryShape useShape = shape;
                 if (shape == GeometryShape.Auto) {

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
 using Inhumate.RTI.Proto;
 using Google.Protobuf;
 using UnityEngine;
@@ -250,41 +250,59 @@ namespace Inhumate.Unity.RTI {
                     Application = UnityEngine.Application.productName,
                     ApplicationVersion = UnityEngine.Application.version,
                     IntegrationVersion = IntegrationVersion,
-                    EngineVersion = $"Unity {UnityEngine.Application.unityVersion} .NET {frameworkVer} {runtimeVer}"
+                    EngineVersion = $"Unity {UnityEngine.Application.unityVersion} .NET {frameworkVer} {runtimeVer}",
+                    Capabilities = {
+                        RTICapability.RuntimeControl,
+                        RTICapability.Scenario,
+                        RTICapability.TimeScale
+                    }
                 };
                 if (!string.IsNullOrWhiteSpace(clientId)) rti.ClientId = clientId;
                 if (!string.IsNullOrWhiteSpace(secret)) rti.Secret = secret;
-                Subscribe<RuntimeControl>(RTIConstants.ControlChannel, OnRuntimeControl);
-                Subscribe<RuntimeControl>(rti.OwnChannelPrefix + RTIConstants.ControlChannel, OnRuntimeControl);
-                Subscribe<Scenarios>(RTIConstants.ScenariosChannel, OnScenarios);
+                Subscribe<RuntimeControl>(RTIChannel.Control, OnRuntimeControl);
+                Subscribe<RuntimeControl>(rti.OwnChannelPrefix + RTIChannel.Control, OnRuntimeControl);
+                Subscribe<Scenarios>(RTIChannel.Scenarios, OnScenarios);
                 rti.RegisterChannel(new Channel {
-                    Name = RTIConstants.EntityChannel,
+                    Name = RTIChannel.Entity,
+                    DataType = typeof(Entity).Name,
+                    State = true,
+                    FirstFieldId = true
+                });
+                Subscribe<Entity>(RTIChannel.Entity, OnEntity);
+                rti.RegisterChannel(new Channel {
+                    Name = RTIChannel.EntityOperation,
                     DataType = typeof(EntityOperation).Name,
+                    Ephemeral = true,
+                });
+                Subscribe<EntityOperation>(RTIChannel.EntityOperation, OnEntityOperation);
+                rti.RegisterChannel(new Channel {
+                    Name = RTIChannel.Geometry,
+                    DataType = typeof(Geometry).Name,
+                    State = true,
                     FirstFieldId = true
                 });
-                Subscribe<EntityOperation>(RTIConstants.EntityChannel, OnEntityOperation);
                 rti.RegisterChannel(new Channel {
-                    Name = RTIConstants.GeometryChannel,
+                    Name = RTIChannel.GeometryOperation,
                     DataType = typeof(GeometryOperation).Name,
-                    FirstFieldId = true
+                    Ephemeral = true,
                 });
-                Subscribe<GeometryOperation>(RTIConstants.GeometryChannel, OnGeometryOperation);
-                Subscribe<Injectables>(RTIConstants.InjectablesChannel, OnInjectables);
-                Subscribe<InjectionOperation>(RTIConstants.InjectionOperationChannel, OnInjectionOperation);
+                Subscribe<GeometryOperation>(RTIChannel.GeometryOperation, OnGeometryOperation);
+                Subscribe<InjectableOperation>(RTIChannel.InjectableOperation, OnInjectableOperation);
+                Subscribe<InjectionOperation>(RTIChannel.InjectionOperation, OnInjectionOperation);
                 rti.RegisterChannel(new Channel {
-                    Name = RTIConstants.InjectionChannel,
+                    Name = RTIChannel.Injection,
                     DataType = typeof(Injection).Name,
-                    Stateless = true,
+                    State = true,
                     FirstFieldId = true
                 });
-                Subscribe<Commands>(RTIConstants.CommandsChannel, OnCommands);
-                Subscribe<Commands>(rti.OwnChannelPrefix + RTIConstants.CommandsChannel, OnCommands);
+                Subscribe<Commands>(RTIChannel.Commands, OnCommands);
+                Subscribe<Commands>(rti.OwnChannelPrefix + RTIChannel.Commands, OnCommands);
                 rti.RegisterChannel(new Channel {
-                    Name = RTIConstants.CommandsChannel,
+                    Name = RTIChannel.Commands,
                     DataType = typeof(Commands).Name,
                     Ephemeral = true
                 });
-                Subscribe(RTIConstants.ClientDisconnectChannel, OnClientDisconnect);
+                Subscribe(RTIChannel.ClientDisconnect, OnClientDisconnect);
                 rti.OnConnected += OnRtiConnected;
                 rti.OnDisconnected += OnRtiDisconnected;
                 rti.OnError += OnRtiError;
@@ -307,8 +325,8 @@ namespace Inhumate.Unity.RTI {
             if (persistentEntityOwnerClientId == null) QueryPersistentEntityOwner();
             if (persistentGeometryOwnerClientId == null) QueryPersistenGeometryOwner();
             if (lateJoin && state == RuntimeState.Initial) {
-                Publish(RTIConstants.ClientsChannel, new Clients { RequestClients = new Google.Protobuf.WellKnownTypes.Empty() });
-                Publish(RTIConstants.ControlChannel, new RuntimeControl { RequestCurrentScenario = new Google.Protobuf.WellKnownTypes.Empty() });
+                Publish(RTIChannel.Clients, new Clients { RequestClients = new Google.Protobuf.WellKnownTypes.Empty() });
+                Publish(RTIChannel.Control, new RuntimeControl { RequestCurrentScenario = new Google.Protobuf.WellKnownTypes.Empty() });
             }
             RunOrQueue(() => {
                 url = rti.Url;
@@ -318,20 +336,32 @@ namespace Inhumate.Unity.RTI {
             });
         }
 
+        public void ClaimPersistentEntityOwnership() {
+            persistentEntityOwnerClientId = rti.ClientId;
+            PublishClaimPersistentEntityOwnership();
+        }
+
+        public void ClaimPersistentGeometryOwnership() {
+            persistentGeometryOwnerClientId = rti.ClientId;
+            PublishClaimPersistentGeometryOwnership();
+        }
+
         private void QueryPersistentEntityOwner() {
-            Publish(RTIConstants.EntityChannel, new EntityOperation {
-                Id = rti.Application,
-                ClientId = rti.ClientId,
-                RequestPersistentOwnership = new Google.Protobuf.WellKnownTypes.Empty()
+            Publish(RTIChannel.EntityOperation, new EntityOperation {
+                RequestPersistentOwnership = new EntityOperation.Types.ApplicationClient {
+                    Application = rti.Application,
+                    ClientId = rti.ClientId
+                }
             });
             RunOrQueue(() => { StartCoroutine(RandomDelayClaimPersistentEntityOwnership()); });
         }
 
         private void QueryPersistenGeometryOwner() {
-            Publish(RTIConstants.GeometryChannel, new GeometryOperation {
-                Id = rti.Application,
-                ClientId = rti.ClientId,
-                RequestPersistentOwnership = new Google.Protobuf.WellKnownTypes.Empty()
+            Publish(RTIChannel.Geometry, new GeometryOperation {
+                RequestPersistentOwnership = new GeometryOperation.Types.ApplicationClient {
+                    Application = rti.Application,
+                    ClientId = rti.ClientId
+                }
             });
             RunOrQueue(() => { StartCoroutine(RandomDelayClaimPersistentGeometryOwnership()); });
         }
@@ -550,13 +580,6 @@ namespace Inhumate.Unity.RTI {
                         if (wasTimeSyncMaster && !IsTimeSyncMaster && debugRuntimeControl) Debug.Log($"Giving up time sync master to {timeSyncMasterClientId}");
                         break;
                     }
-                case RuntimeControl.ControlOneofCase.State: {
-                        if (!string.IsNullOrEmpty(message.State.ClientId)) {
-                            var client = rti.GetClient(message.State.ClientId);
-                            if (client != null) client.State = message.State.State;
-                        }
-                        break;
-                    }
                 case RuntimeControl.ControlOneofCase.RequestCurrentScenario: {
                         if (scenario != null) {
                             var currentScenario = new RuntimeControl.Types.LoadScenario {
@@ -565,7 +588,7 @@ namespace Inhumate.Unity.RTI {
                             foreach (var pair in scenarioParameterValues) {
                                 currentScenario.ParameterValues.Add(pair.Key, pair.Value);
                             }
-                            Publish(RTIConstants.ControlChannel, new RuntimeControl {
+                            Publish(RTIChannel.Control, new RuntimeControl {
                                 CurrentScenario = currentScenario
                             });
                         }
@@ -599,7 +622,7 @@ namespace Inhumate.Unity.RTI {
             if (scenarios.Count > 0 || scenarioNames.Count > 0) {
                 foreach (var scenario in scenarios) {
                     if (scenario != null && !mentionedScenario.ContainsKey(scenario.name)) {
-                        rti.Publish(RTIConstants.ScenariosChannel, new Scenarios {
+                        rti.Publish(RTIChannel.Scenarios, new Scenarios {
                             Scenario = scenario.ToProto()
                         });
                         mentionedScenario[scenario.name] = true;
@@ -607,7 +630,7 @@ namespace Inhumate.Unity.RTI {
                 }
                 foreach (var scenarioName in scenarioNames) {
                     if (!mentionedScenario.ContainsKey(scenarioName)) {
-                        rti.Publish(RTIConstants.ScenariosChannel, new Scenarios {
+                        rti.Publish(RTIChannel.Scenarios, new Scenarios {
                             Scenario = new Inhumate.RTI.Proto.Scenario { Name = scenarioName }
                         });
                         mentionedScenario[scenarioName] = true;
@@ -621,7 +644,7 @@ namespace Inhumate.Unity.RTI {
                     var lastSlash = scenePath.LastIndexOf("/");
                     var sceneName = scenePath.Substring(lastSlash + 1, scenePath.LastIndexOf(".") - lastSlash - 1);
                     if (!mentionedScenario.ContainsKey(sceneName)) {
-                        rti.Publish(RTIConstants.ScenariosChannel, new Scenarios {
+                        rti.Publish(RTIChannel.Scenarios, new Scenarios {
                             Scenario = new Inhumate.RTI.Proto.Scenario {
                                 Name = sceneName
                             }
@@ -632,74 +655,71 @@ namespace Inhumate.Unity.RTI {
             }
         }
 
+        private void OnEntity(string channelName, Entity message) {
+            var entity = GetEntityById(message.Id);
+            if (entity != null && entity.persistent && !entity.owned) {
+                if (message.Deleted) {
+                    if (debugEntities) Debug.Log($"Destroy deleted persistent entity {message.Id}: {entity.name}", this);
+                    if (entity.gameObject != null) Destroy(entity.gameObject);
+                    UnregisterEntity(entity);
+                } else {
+                    if (debugEntities) Debug.Log($"Update persistent entity {message.Id}: {entity.name}", this);
+                    entity.SetPropertiesFromEntityData(message);
+                    entity.InvokeOnUpdated(message);
+                }
+            }
+        }
+
         private void OnEntityOperation(string channelName, EntityOperation message) {
-            var id = message.Id;
-            var entity = GetEntityById(id);
-            switch (message.OperationCase) {
-                case EntityOperation.OperationOneofCase.RequestUpdate: {
-                        if (!string.IsNullOrEmpty(message.Id)) {
-                            if (entity != null) entity.RequestUpdate();
-                        } else {
-                            foreach (var ent in entities.Values) {
-                                if (ent.publishing) ent.RequestUpdate();
-                            }
+            switch (message.WhichCase) {
+                case EntityOperation.WhichOneofCase.RequestUpdate: {
+                        foreach (var ent in entities.Values) {
+                            if (ent.publishing) ent.RequestUpdate();
                         }
                         break;
                     }
-                case EntityOperation.OperationOneofCase.Destroy:
-                    if (entity != null && entity.persistent) {
-                        if (debugEntities) Debug.Log($"Destroy persistent entity {id}: {entity.name}", this);
-                        entity.created = false;
-                        if (entity.gameObject != null) Destroy(entity.gameObject);
-                        UnregisterEntity(entity);
-                    }
-                    break;
-                case EntityOperation.OperationOneofCase.Update:
-                    if (entity != null && entity.persistent) {
-                        if (debugEntities) Debug.Log($"Update persistent entity {id}: {entity.name}", this);
-                        entity.SetPropertiesFromEntityData(message.Update);
-                        entity.InvokeOnUpdated(message.Update);
-                    }
-                    break;
-                case EntityOperation.OperationOneofCase.TransferOwnership: {
-                        if (entity != null && message.ClientId != ClientId) {
-                            if (entity.owned && entity.ownerClientId == ClientId && message.TransferOwnership != ClientId) {
-                                entity.ReleaseOwnership(message.TransferOwnership);
+                case EntityOperation.WhichOneofCase.TransferOwnership: {
+                        var entity = GetEntityById(message.TransferOwnership.EntityId);
+                        if (entity != null && message.TransferOwnership.ClientId != ClientId) {
+                            if (entity.owned && entity.ownerClientId == ClientId && message.TransferOwnership.ClientId != ClientId) {
+                                entity.ReleaseOwnership(message.TransferOwnership.ClientId);
                                 OnEntityOwnershipReleased?.Invoke(entity);
-                            } else if (!entity.owned && entity.ownerClientId != ClientId && message.TransferOwnership == ClientId) {
+                            } else if (!entity.owned && entity.ownerClientId != ClientId && message.TransferOwnership.ClientId == ClientId) {
                                 entity.AssumeOwnership();
                                 OnEntityOwnershipAssumed?.Invoke(entity);
                             } else if (entity.owned) {
-                                Debug.LogWarning($"Weird ownership transfer of owned entity {entity.id} to {message.TransferOwnership}");
+                                Debug.LogWarning($"Weird ownership transfer of owned entity {entity.id} to {message.TransferOwnership.ClientId}");
                             }
                         }
                         break;
                     }
-                case EntityOperation.OperationOneofCase.AssumeOwnership: {
+                case EntityOperation.WhichOneofCase.AssumeOwnership: {
+                        var entity = GetEntityById(message.AssumeOwnership.EntityId);
                         if (entity != null) {
-                            if (entity.owned && message.ClientId != ClientId && entity.ownerClientId == ClientId) {
-                                entity.ReleaseOwnership(message.ClientId);
+                            if (entity.owned && message.AssumeOwnership.ClientId != ClientId && entity.ownerClientId == ClientId) {
+                                entity.ReleaseOwnership(message.AssumeOwnership.ClientId);
                                 OnEntityOwnershipReleased?.Invoke(entity);
                             }
                             entity.lastOwnershipChangeTime = Time.time;
                         }
                         break;
                     }
-                case EntityOperation.OperationOneofCase.ReleaseOwnership: {
+                case EntityOperation.WhichOneofCase.ReleaseOwnership: {
+                        var entity = GetEntityById(message.ReleaseOwnership.EntityId);
                         if (entity != null) {
-                            if (entity.ownerClientId == message.ClientId) entity.ownerClientId = null;
+                            if (entity.ownerClientId == message.ReleaseOwnership.ClientId) entity.ownerClientId = null;
                             entity.lastOwnershipChangeTime = Time.time;
                         }
                         break;
                     }
-                case EntityOperation.OperationOneofCase.RequestPersistentOwnership:
-                    if (IsPersistentEntityOwner && message.Id == rti.Application) {
+                case EntityOperation.WhichOneofCase.RequestPersistentOwnership:
+                    if (IsPersistentEntityOwner && message.RequestPersistentOwnership.Application == rti.Application) {
                         PublishClaimPersistentEntityOwnership();
                     }
                     break;
-                case EntityOperation.OperationOneofCase.ClaimPersistentOwnership:
-                    if (message.Id == rti.Application) {
-                        persistentEntityOwnerClientId = message.ClientId;
+                case EntityOperation.WhichOneofCase.ClaimPersistentOwnership:
+                    if (message.ClaimPersistentOwnership.Application == rti.Application) {
+                        persistentEntityOwnerClientId = message.ClaimPersistentOwnership.ClientId;
                     }
                     break;
             }
@@ -711,16 +731,17 @@ namespace Inhumate.Unity.RTI {
                 if (debugRuntimeControl) Debug.Log($"RTI claiming persistent entity ownership for {rti.Application}");
                 persistentEntityOwnerClientId = rti.ClientId;
                 PublishClaimPersistentEntityOwnership();
-                Publish(RTIConstants.ClientsChannel, new Clients { RequestClients = new Google.Protobuf.WellKnownTypes.Empty() });
+                Publish(RTIChannel.Clients, new Clients { RequestClients = new Google.Protobuf.WellKnownTypes.Empty() });
                 foreach (var entity in entities.Values) {
                     if (entity.persistent && string.IsNullOrEmpty(entity.ownerClientId)) {
                         Debug.Log($"Re-assume ownership of persistent entity {entity.id}");
                         entity.owned = true;
                         entity.ownerClientId = ClientId;
-                        Publish(RTIConstants.EntityChannel, new EntityOperation {
-                            Id = entity.id,
-                            ClientId = ClientId,
-                            AssumeOwnership = new Google.Protobuf.WellKnownTypes.Empty()
+                        Publish(RTIChannel.EntityOperation, new EntityOperation {
+                            AssumeOwnership = new EntityOperation.Types.EntityClient {
+                                EntityId = entity.id,
+                                ClientId = ClientId
+                            }
                         });
                         entity.InvokeOnOwnershipChanged();
                     }
@@ -729,10 +750,11 @@ namespace Inhumate.Unity.RTI {
         }
 
         private void PublishClaimPersistentEntityOwnership() {
-            rti.Publish(RTIConstants.EntityChannel, new EntityOperation {
-                Id = rti.Application,
-                ClientId = rti.ClientId,
-                ClaimPersistentOwnership = new Google.Protobuf.WellKnownTypes.Empty()
+            rti.Publish(RTIChannel.EntityOperation, new EntityOperation {
+                ClaimPersistentOwnership = new EntityOperation.Types.ApplicationClient {
+                    Application = rti.Application,
+                    ClientId = rti.ClientId
+                }
             });
         }
 
@@ -754,27 +776,21 @@ namespace Inhumate.Unity.RTI {
         }
 
         private void OnGeometryOperation(string channelName, GeometryOperation message) {
-            switch (message.OperationCase) {
-                case GeometryOperation.OperationOneofCase.RequestUpdate: {
-                        if (!string.IsNullOrEmpty(message.Id)) {
-                            var geometry = GetGeometryById(message.Id);
-                            if (geometry != null) geometry.RequestUpdate();
-                        } else {
-                            foreach (var geometry in geometries.Values) {
-                                geometry.RequestUpdate();
-                            }
+            switch (message.WhichCase) {
+                case GeometryOperation.WhichOneofCase.RequestUpdate: {
+                        foreach (var geometry in geometries.Values) {
+                            geometry.RequestUpdate();
                         }
                         break;
                     }
-                case GeometryOperation.OperationOneofCase.RequestPersistentOwnership:
-                    if (IsPersistentGeometryOwner && message.Id == rti.Application) {
+                case GeometryOperation.WhichOneofCase.RequestPersistentOwnership:
+                    if (IsPersistentGeometryOwner && message.RequestPersistentOwnership.Application == rti.Application) {
                         PublishClaimPersistentGeometryOwnership();
                     }
                     break;
-                case GeometryOperation.OperationOneofCase.ClaimPersistentOwnership:
-                    if (message.Id == rti.Application) {
-                        persistentGeometryOwnerClientId = message.ClientId;
-
+                case GeometryOperation.WhichOneofCase.ClaimPersistentOwnership:
+                    if (message.ClaimPersistentOwnership.Application == rti.Application) {
+                        persistentGeometryOwnerClientId = message.ClaimPersistentOwnership.ClientId;
                     }
                     break;
             }
@@ -786,7 +802,7 @@ namespace Inhumate.Unity.RTI {
                 if (debugRuntimeControl) Debug.Log($"RTI claiming persistent geometry ownership for {rti.Application}");
                 persistentGeometryOwnerClientId = rti.ClientId;
                 PublishClaimPersistentGeometryOwnership();
-                Publish(RTIConstants.ClientsChannel, new Clients { RequestClients = new Google.Protobuf.WellKnownTypes.Empty() });
+                Publish(RTIChannel.Clients, new Clients { RequestClients = new Google.Protobuf.WellKnownTypes.Empty() });
                 foreach (var geometry in geometries.Values) {
                     if (geometry.persistent) geometry.owned = true;
                 }
@@ -794,10 +810,11 @@ namespace Inhumate.Unity.RTI {
         }
 
         private void PublishClaimPersistentGeometryOwnership() {
-            rti.Publish(RTIConstants.GeometryChannel, new GeometryOperation {
-                Id = rti.Application,
-                ClientId = rti.ClientId,
-                ClaimPersistentOwnership = new Google.Protobuf.WellKnownTypes.Empty()
+            rti.Publish(RTIChannel.GeometryOperation, new GeometryOperation {
+                ClaimPersistentOwnership = new GeometryOperation.Types.ApplicationClient {
+                    Application = rti.Application,
+                    ClientId = rti.ClientId
+                }
             });
         }
 
@@ -821,14 +838,14 @@ namespace Inhumate.Unity.RTI {
             return null;
         }
 
-        private void OnInjectables(string channelName, Injectables message) {
-            if (message.WhichCase == Injectables.WhichOneofCase.RequestInjectables) {
+        private void OnInjectableOperation(string channelName, InjectableOperation message) {
+            if (message.WhichCase == InjectableOperation.WhichOneofCase.RequestUpdate) {
                 foreach (var injectable in injectables.Values) injectable.Publish();
             }
         }
 
         private void OnInjectionOperation(string channelName, InjectionOperation message) {
-            if (message.WhichCase == InjectionOperation.WhichOneofCase.RequestInjections) {
+            if (message.WhichCase == InjectionOperation.WhichOneofCase.RequestUpdate) {
                 foreach (var injectable in injectables.Values) injectable.PublishInjections();
             } else if (message.WhichCase == InjectionOperation.WhichOneofCase.Inject) {
                 var id = message.Inject.Injectable.ToLower();
@@ -1011,7 +1028,7 @@ namespace Inhumate.Unity.RTI {
             } else {
                 commands[name] = command;
                 commandHandlers[name] = handler;
-                WhenConnectedOnce(() => Publish(RTIConstants.CommandsChannel, new Commands { Command = command }));
+                WhenConnectedOnce(() => Publish(RTIChannel.Commands, new Commands { Command = command }));
                 return true;
             }
         }
@@ -1032,7 +1049,7 @@ namespace Inhumate.Unity.RTI {
         public void PublishCommandResponse(string transactionId, CommandResponse response) {
             if (string.IsNullOrEmpty(transactionId) || !IsConnected) return;
             response.TransactionId = transactionId;
-            var channel = RTIConstants.CommandsChannel;
+            var channel = RTIChannel.Commands;
             commandTransactionChannel.TryGetValue(transactionId, out channel);
             commandTransactionChannel.Remove(transactionId);
             Publish(channel, new Commands { Response = response });
@@ -1108,7 +1125,7 @@ namespace Inhumate.Unity.RTI {
                     || (timeSyncMasterClientId == rti.ClientId && Mathf.Abs(time - lastTimeSyncTime) >= 1f))) {
                 lastTimeSyncTime = time;
                 if (rti.IsConnected) {
-                    rti.Publish(RTIConstants.ControlChannel, new RuntimeControl {
+                    rti.Publish(RTIChannel.Control, new RuntimeControl {
                         TimeSync = new RuntimeControl.Types.TimeSync {
                             Time = time,
                             TimeScale = timeScale,

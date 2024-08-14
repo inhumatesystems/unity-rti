@@ -5,7 +5,7 @@
 cd "$(dirname $0)/.."
 
 dlls="\
-    Inhumate.RTI.Client.dll \
+    Inhumate.RTI.dll \
     Google.Protobuf.dll \
     Utf8Json.dll \
     System.Threading.Tasks.Extensions.dll \
@@ -14,7 +14,7 @@ dlls="\
     System.Buffers.dll \
     "
 
-clientdir="../../rti/clients/dotnet/src"
+clientdir="../../rti-client/dotnet/src"
 builddir="$clientdir/bin/Release/netstandard2.0/publish"
 
 cd $clientdir

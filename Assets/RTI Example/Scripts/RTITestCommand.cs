@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Inhumate.Unity.RTI;
 using Inhumate.RTI.Proto;
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
 
 namespace Inhumate.Unity.Examples.RTI {
 

@@ -10,7 +10,7 @@ namespace Inhumate.Unity.RTI {
 
         protected RTIConnection RTI => RTIConnection.Instance;
 
-        private Inhumate.RTI.Client.UntypedListener listener;
+        private Inhumate.RTI.UntypedListener listener;
 
         protected virtual void OnEnable() {
             listener = RTI.SubscribeJson<T>(ChannelName, (channel, message) => {

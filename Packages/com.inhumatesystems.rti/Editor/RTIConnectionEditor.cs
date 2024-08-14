@@ -2,12 +2,13 @@ using System;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
+using NaughtyAttributes.Editor;
 
 namespace Inhumate.Unity.RTI {
 
     [CustomEditor(typeof(RTIConnection))]
-    public class RTIConnectionEditor : Editor {
+    public class RTIConnectionEditor : NaughtyInspector {
 
         bool showVersions;
         bool showCommands;
@@ -63,7 +64,16 @@ namespace Inhumate.Unity.RTI {
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
 
-            this.DrawDefaultInspector();
+            base.OnInspectorGUI();
+
+            if (Application.isPlaying) {
+                if (!connection.IsPersistentEntityOwner && GUILayout.Button("Claim Persistent Entity Ownership")) {
+                    connection.ClaimPersistentEntityOwnership();
+                }
+                if (!connection.IsPersistentGeometryOwner && GUILayout.Button("Claim Persistent Geometry Ownership")) {
+                    connection.ClaimPersistentGeometryOwnership();
+                }
+            }
         }
     }
 }

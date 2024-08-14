@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
 using Inhumate.RTI.Proto;
 using Unity.Mathematics;
 using UnityEngine;
@@ -13,7 +13,7 @@ namespace Inhumate.Unity.RTI {
         abstract public string Id { get; }
 
         public bool persistent { get; internal set; } = true;
-        public bool created { get; internal set; }
+        public bool published { get; internal set; }
         public bool owned { get; internal set; } = true;
 
         protected RTIConnection RTI => RTIConnection.Instance;
@@ -36,53 +36,43 @@ namespace Inhumate.Unity.RTI {
 
         protected virtual void Update() {
             if (registered && owned && RTI.IsConnected) {
-                if (!created) {
+                if (!published) {
                     if (persistent && RTI.persistentGeometryOwnerClientId != null && !RTI.IsPersistentGeometryOwner) {
                         owned = false;
                         //ownerClientId = RTI.persistentGeometryOwnerClientId;
                     } else {
                         if (RTI.debugEntities) Debug.Log($"RTI publish create geometry {Id}", this);
-                        RTI.Publish(RTIConstants.GeometryChannel, new GeometryOperation {
-                            Id = Id,
-                            ClientId = RTI.ClientId,
-                            Create = GeometryData
-                        });
+                        RTI.Publish(RTIChannel.Geometry, GeometryData);
                     }
-                    created = true;
+                    published = true;
                 } else if (updateRequested) {
                     updateRequested = false;
-                    PublishUpdate();
+                    Publish();
                 }
             }
         }
 
-        protected void PublishUpdate() {
-            RTI.Publish(RTIConstants.GeometryChannel, new GeometryOperation {
-                Id = Id,
-                ClientId = RTI.ClientId,
-                Update = GeometryData
-            });
+        protected void Publish() {
+            RTI.Publish(RTIChannel.Geometry, GeometryData);
         }
 
         void OnDestroy() {
             bool hopefullyOtherClientTakesOver = RTI.quitting && persistent && RTI.Client.KnownClients.Count(c => c.Application == RTI.Client.Application) > 1;
-            if (registered && created && owned && RTI.IsConnected && !hopefullyOtherClientTakesOver) {
-                created = false;
-                if (RTI.debugEntities) Debug.Log($"RTI publish destroy geometry {Id}");
-                RTI.Publish(RTIConstants.GeometryChannel, new GeometryOperation {
-                    Id = Id,
-                    ClientId = RTI.ClientId,
-                    Destroy = new Google.Protobuf.WellKnownTypes.Empty()
-                });
+            if (registered && published && owned && RTI.IsConnected && !hopefullyOtherClientTakesOver) {
+                published = false;
+                if (RTI.debugEntities) Debug.Log($"RTI publish deleted geometry {Id}");
+                var data = GeometryData;
+                data.Deleted = true;
+                RTI.Publish(RTIChannel.Geometry, data);
             }
             RTI.UnregisterGeometry(this);
         }
 
         void OnApplicationQuit() {
-            if (created && owned && !persistent) OnDestroy();
+            if (published && owned && !persistent) OnDestroy();
         }
 
-        abstract internal GeometryOperation.Types.Geometry GeometryData { get; }
+        abstract internal Geometry GeometryData { get; }
 
         protected Inhumate.RTI.Proto.Color GetColor(UnityEngine.Color color) {
             Inhumate.RTI.Proto.Color col = null;
@@ -96,10 +86,10 @@ namespace Inhumate.Unity.RTI {
             return col;
         }
 
-        protected GeometryOperation.Types.Point2D CreatePoint2D(Vector3 position) {
-            var point = new GeometryOperation.Types.Point2D();
+        protected Geometry.Types.Point2D CreatePoint2D(Vector3 position) {
+            var point = new Geometry.Types.Point2D();
             if (useLocalCoordinates) {
-                point.Local = new GeometryOperation.Types.LocalPoint2D {
+                point.Local = new Geometry.Types.LocalPoint2D {
                     X = position.x,
                     Y = position.z
                 };
@@ -110,10 +100,10 @@ namespace Inhumate.Unity.RTI {
             return point;
         }
 
-        protected GeometryOperation.Types.Point3D CreatePoint3D(Vector3 position) {
-            var point = new GeometryOperation.Types.Point3D();
+        protected Geometry.Types.Point3D CreatePoint3D(Vector3 position) {
+            var point = new Geometry.Types.Point3D();
             if (useLocalCoordinates) {
-                point.Local = new GeometryOperation.Types.LocalPoint3D {
+                point.Local = new Geometry.Types.LocalPoint3D {
                     X = position.x,
                     Y = position.y,
                     Z = position.z
@@ -125,23 +115,23 @@ namespace Inhumate.Unity.RTI {
             return point;
         }
 
-        protected GeometryOperation.Types.GeodeticPoint2D GeodeticPoint2D(EntityPosition.Types.GeodeticPosition position) {
-            return new GeometryOperation.Types.GeodeticPoint2D {
+        protected Geometry.Types.GeodeticPoint2D GeodeticPoint2D(EntityPosition.Types.GeodeticPosition position) {
+            return new Geometry.Types.GeodeticPoint2D {
                 Latitude = position.Latitude,
                 Longitude = position.Longitude
             };
         }
 
-        protected GeometryOperation.Types.GeodeticPoint3D GeodeticPoint3D(EntityPosition.Types.GeodeticPosition position) {
-            return new GeometryOperation.Types.GeodeticPoint3D {
+        protected Geometry.Types.GeodeticPoint3D GeodeticPoint3D(EntityPosition.Types.GeodeticPosition position) {
+            return new Geometry.Types.GeodeticPoint3D {
                 Latitude = position.Latitude,
                 Longitude = position.Longitude,
                 Altitude = position.Altitude
             };
         }
 
-        protected GeometryOperation.Types.Line2D CreateLine2D(LineRenderer renderer) {
-            var line = new GeometryOperation.Types.Line2D();
+        protected Geometry.Types.Line2D CreateLine2D(LineRenderer renderer) {
+            var line = new Geometry.Types.Line2D();
             for (var i = 0; i < renderer.positionCount; i++) {
                 var position = renderer.GetPosition(i);
                 if (!renderer.useWorldSpace) position = transform.TransformPoint(position);
@@ -151,8 +141,8 @@ namespace Inhumate.Unity.RTI {
             return line;
         }
 
-        protected GeometryOperation.Types.Line3D CreateLine3D(LineRenderer renderer) {
-            var line = new GeometryOperation.Types.Line3D();
+        protected Geometry.Types.Line3D CreateLine3D(LineRenderer renderer) {
+            var line = new Geometry.Types.Line3D();
             for (var i = 0; i < renderer.positionCount; i++) {
                 var position = renderer.GetPosition(i);
                 if (!renderer.useWorldSpace) position = transform.TransformPoint(position);
@@ -162,8 +152,8 @@ namespace Inhumate.Unity.RTI {
             return line;
         }
 
-        protected GeometryOperation.Types.Spline2D CreateSpline2D(SplineContainer splineContainer) {
-            var gspline = new GeometryOperation.Types.Spline2D();
+        protected Geometry.Types.Spline2D CreateSpline2D(SplineContainer splineContainer) {
+            var gspline = new Geometry.Types.Spline2D();
             var uspline = splineContainer.Spline;
             foreach (var knot in uspline) {
                 gspline.Points.Add(CreatePoint2D(transform.TransformPoint(knot.Position)));
@@ -177,8 +167,8 @@ namespace Inhumate.Unity.RTI {
             return gspline;
         }
 
-        protected GeometryOperation.Types.Spline3D CreateSpline3D(SplineContainer splineContainer) {
-            var gspline = new GeometryOperation.Types.Spline3D();
+        protected Geometry.Types.Spline3D CreateSpline3D(SplineContainer splineContainer) {
+            var gspline = new Geometry.Types.Spline3D();
             var uspline = splineContainer.Spline;
             foreach (var knot in uspline) {
                 gspline.Points.Add(CreatePoint3D(transform.TransformPoint(knot.Position)));
@@ -192,8 +182,8 @@ namespace Inhumate.Unity.RTI {
             return gspline;
         }
 
-        protected GeometryOperation.Types.Polygon CreatePolygon(Mesh mesh) {
-            var polygon = new GeometryOperation.Types.Polygon();
+        protected Geometry.Types.Polygon CreatePolygon(Mesh mesh) {
+            var polygon = new Geometry.Types.Polygon();
             var bounds = mesh.bounds;
             var corner1 = transform.TransformPoint(bounds.min.x, 0, bounds.min.z);
             var corner2 = transform.TransformPoint(bounds.min.x, 0, bounds.max.z);
@@ -208,8 +198,8 @@ namespace Inhumate.Unity.RTI {
             return polygon;
         }
 
-        protected GeometryOperation.Types.Polygon CreatePolygonFromColliders(Collider[] colliders) {
-            var polygon = new GeometryOperation.Types.Polygon();
+        protected Geometry.Types.Polygon CreatePolygonFromColliders(Collider[] colliders) {
+            var polygon = new Geometry.Types.Polygon();
             var bounds = new Bounds();
             foreach (var collider in colliders) {
                 bounds.Encapsulate(collider.bounds.max);
@@ -218,8 +208,8 @@ namespace Inhumate.Unity.RTI {
             return CreatePolygonFromBounds(bounds);
         }
 
-        protected GeometryOperation.Types.Polygon CreatePolygonFromBounds(Bounds bounds) {
-            var polygon = new GeometryOperation.Types.Polygon();
+        protected Geometry.Types.Polygon CreatePolygonFromBounds(Bounds bounds) {
+            var polygon = new Geometry.Types.Polygon();
             var corner1 = new Vector3(bounds.min.x, 0, bounds.min.z);
             var corner2 = new Vector3(bounds.min.x, 0, bounds.max.z);
             var corner3 = new Vector3(bounds.max.x, 0, bounds.max.z);
@@ -232,15 +222,15 @@ namespace Inhumate.Unity.RTI {
             polygon.Height = bounds.max.y - polygon.Base;
             return polygon;
         }
-        protected GeometryOperation.Types.Mesh CreateMesh(MeshFilter[] meshFilters, bool withNormals = false, bool local = false) {
-            var outmesh = new GeometryOperation.Types.Mesh();
+        protected Geometry.Types.Mesh CreateMesh(MeshFilter[] meshFilters, bool withNormals = false, bool local = false) {
+            var outmesh = new Geometry.Types.Mesh();
             int offset = 0;
             foreach (var meshFilter in meshFilters) {
                 var inmesh = meshFilter.mesh;
                 foreach (var point in inmesh.vertices) {
                     var tpoint = meshFilter.transform.TransformPoint(point);
                     if (local && transform.parent != null) tpoint = transform.parent.InverseTransformPoint(tpoint);
-                    outmesh.Vertices.Add(new GeometryOperation.Types.LocalPoint3D {
+                    outmesh.Vertices.Add(new Geometry.Types.LocalPoint3D {
                         X = tpoint.x,
                         Y = tpoint.y,
                         Z = tpoint.z
@@ -253,7 +243,7 @@ namespace Inhumate.Unity.RTI {
                     foreach (var normal in inmesh.normals) {
                         var tnormal = meshFilter.transform.TransformVector(normal);
                         if (local && transform.parent != null) tnormal = transform.parent.InverseTransformVector(tnormal);
-                        outmesh.Normals.Add(new GeometryOperation.Types.LocalPoint3D {
+                        outmesh.Normals.Add(new Geometry.Types.LocalPoint3D {
                             X = tnormal.x,
                             Y = tnormal.y,
                             Z = tnormal.z
@@ -265,8 +255,8 @@ namespace Inhumate.Unity.RTI {
             return outmesh;
         }
 
-        protected GeometryOperation.Types.Mesh CreateMeshFromColliders(Collider[] colliders, bool local = false) {
-            var outmesh = new GeometryOperation.Types.Mesh();
+        protected Geometry.Types.Mesh CreateMeshFromColliders(Collider[] colliders, bool local = false) {
+            var outmesh = new Geometry.Types.Mesh();
             int offset = 0;
             foreach (var collider in colliders) {
                 if (collider is BoxCollider) {
@@ -274,7 +264,7 @@ namespace Inhumate.Unity.RTI {
                     foreach (var corner in BOX_CORNERS) {
                         var tpoint = collider.transform.TransformPoint(box.center + Vector3.Scale(corner, box.size) - box.size / 2);
                         if (local && transform.parent != null) tpoint = transform.parent.InverseTransformPoint(tpoint);
-                        outmesh.Vertices.Add(new GeometryOperation.Types.LocalPoint3D {
+                        outmesh.Vertices.Add(new Geometry.Types.LocalPoint3D {
                             X = tpoint.x,
                             Y = tpoint.y,
                             Z = tpoint.z
@@ -288,7 +278,7 @@ namespace Inhumate.Unity.RTI {
                     foreach (var corner in BOX_CORNERS) {
                         var tpoint = collider.bounds.center + Vector3.Scale(corner, collider.bounds.extents) - collider.bounds.extents;
                         if (local && transform.parent != null) tpoint = transform.parent.InverseTransformPoint(tpoint);
-                        outmesh.Vertices.Add(new GeometryOperation.Types.LocalPoint3D {
+                        outmesh.Vertices.Add(new Geometry.Types.LocalPoint3D {
                             X = tpoint.x,
                             Y = tpoint.y,
                             Z = tpoint.z

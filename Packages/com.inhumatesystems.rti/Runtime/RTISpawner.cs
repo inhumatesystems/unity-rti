@@ -1,14 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 
 namespace Inhumate.Unity.RTI {
 
-    public class RTISpawner : RTIBehaviour<EntityOperation> {
-        public override string ChannelName => RTIConstants.EntityChannel;
+    public class RTISpawner : RTIBehaviour<Entity> {
+        public override string ChannelName => RTIChannel.Entity;
         public const string SpawnAllocationChannel = "rti/spawn";
 
         [System.Serializable]
@@ -30,7 +30,7 @@ namespace Inhumate.Unity.RTI {
         private Dictionary<int, string> spawnPointAllocations = new Dictionary<int, string>();
         private int allocatedSpawnPointIndex = -1;
         private Transform allocatedSpawnPoint { get { return allocatedSpawnPointIndex >= 0 ? playerSpawnPoints[allocatedSpawnPointIndex] : null; } }
-        private Inhumate.RTI.Client.UntypedListener spawnListener;
+        private Inhumate.RTI.UntypedListener spawnListener;
         private float startTime;
 
         public Dictionary<string, RTIEntity> entityTypes = new Dictionary<string, RTIEntity>();
@@ -120,7 +120,7 @@ namespace Inhumate.Unity.RTI {
         }
 
         private void RequestUpdates() {
-            RTI.Publish(RTIConstants.EntityChannel, new EntityOperation {
+            RTI.Publish(RTIChannel.EntityOperation, new EntityOperation {
                 RequestUpdate = new Google.Protobuf.WellKnownTypes.Empty()
             });
         }
@@ -144,71 +144,62 @@ namespace Inhumate.Unity.RTI {
             }
         }
 
-        protected override void OnMessage(EntityOperation message) {
+        protected override void OnEntity(Entity message) {
             var id = message.Id;
             var entity = RTI.GetEntityById(id);
-            switch (message.OperationCase) {
-                case EntityOperation.OperationOneofCase.Create:
-                    if (entity != null) {
-                        if (!entity.owned && !entity.persistent && RTI.debugEntities) Debug.Log($"Already created entity id {id}: {entity.name}", this);
-                    } else {
-                        CreateEntity(message);
-                    }
-                    break;
-                case EntityOperation.OperationOneofCase.Destroy:
-                    if (entity != null && !entity.persistent) {
-                        if (RTI.debugEntities) Debug.Log($"Destroy entity {id}: {entity.name}", this);
-                        entity.created = false;
+            if (entity != null) {
+                if (!entity.persistent && !entity.owned) {
+                    if (message.Deleted) {
+                        if (RTI.debugEntities) Debug.Log($"Destroy deleted entity {message.Id}: {entity.name}", this);
+                        entity.deleted = true;
                         if (entity.gameObject != null) Destroy(entity.gameObject);
                         RTI.UnregisterEntity(entity);
-                    }
-                    break;
-                case EntityOperation.OperationOneofCase.Update:
-                    if (entity != null) {
-                        if (!entity.persistent) {
-                            if (RTI.debugEntities) Debug.Log($"Update entity {id}: {entity.name}", this);
-                            entity.SetPropertiesFromEntityData(message.Update);
-                            entity.InvokeOnUpdated(message.Update);
-                        }
                     } else {
-                        CreateEntity(message);
+                        if (RTI.debugEntities) Debug.Log($"Update entity {id}: {entity.name}", this);
+                        entity.SetPropertiesFromEntityData(message);
+                        entity.InvokeOnUpdated(message);
                     }
-                    break;
+                }
+            } else if (!message.Deleted) {
+                CreateEntity(message);
             }
         }
 
-        protected void CreateEntity(EntityOperation message) {
-            var data = message.Create ?? message.Update;
+        protected void CreateEntity(Entity data) {
+            if (string.IsNullOrWhiteSpace(data.Id)) {
+                Debug.LogWarning($"Received entity with no id", this);
+                return;
+            }
             GameObject prefab = null;
             if (entityTypes.ContainsKey(data.Type)) {
-                if (RTI.debugEntities) Debug.Log($"Create entity id {message.Id} type {data.Type}", this);
+                if (RTI.debugEntities) Debug.Log($"Create entity id {data.Id} type {data.Type}", this);
                 prefab = entityTypes[data.Type].transform.root.gameObject;
             }
             if (prefab == null) {
                 foreach (var key in entityTypes.Keys) {
                     if (key.Contains("*") && key.Substring(0, key.IndexOf("*")) == data.Type.Substring(0, key.IndexOf("*"))) {
-                        if (RTI.debugEntities) Debug.Log($"Create entity id {message.Id} type {data.Type} (matching {key})");
+                        if (RTI.debugEntities) Debug.Log($"Create entity id {data.Id} type {data.Type} (matching {key})");
                         prefab = entityTypes[key].transform.root.gameObject;
                     }
                 }
             }
             if (prefab == null && unknownEntity != null) {
-                Debug.LogWarning($"Create entity id {message.Id} unknown type {data.Type}", this);
+                Debug.LogWarning($"Create entity id {data.Id} unknown type {data.Type}", this);
                 prefab = unknownEntity.transform.root.gameObject;
             }
             if (prefab == null) {
-                Debug.LogWarning($"Can't create entity id {message.Id} unknown type {data.Type}", this);
+                Debug.LogWarning($"Can't create entity id {data.Id} unknown type {data.Type}", this);
                 return;
             }
             var go = Instantiate(prefab, transform.position, transform.rotation);
             var entity = go.GetComponentInChildren<RTIEntity>();
             if (entity != null) {
-                entity.id = message.Id;
+                entity.id = data.Id;
                 RTI.RegisterEntity(entity);
                 entity.SetPropertiesFromEntityData(data);
-                entity.created = true;
-                entity.owned = message.ClientId == RTI.ClientId;
-                entity.ownerClientId = message.ClientId;
+                entity.published = true;
+                entity.owned = data.OwnerClientId == RTI.ClientId;
+                entity.ownerClientId = data.OwnerClientId;
                 go.name = $"{entity.type} {entity.id}";
                 go.transform.parent = this.transform;
                 if (data.Position != null) RTIPosition.ApplyPositionMessageToTransform(data.Position, go.transform);
