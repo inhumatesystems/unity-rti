@@ -10,11 +10,11 @@ namespace Inhumate.Unity.RTI {
 
         protected RTIConnection RTI => RTIConnection.Instance;
 
-        private Inhumate.RTI.Client.UntypedListener listener;
+        private Inhumate.RTI.UntypedListener listener;
 
         protected virtual void OnEnable() {
             listener = RTI.Subscribe<T>(ChannelName, (channel, message) => {
-                OnMessage(message);
+                OnEntity(message);
             });
         }
 
@@ -22,7 +22,7 @@ namespace Inhumate.Unity.RTI {
             RTI.Unsubscribe(listener);
         }
 
-        protected abstract void OnMessage(T message);
+        protected abstract void OnEntity(T message);
 
         protected void Publish(T message) {
             RTI.Publish(ChannelName, message);

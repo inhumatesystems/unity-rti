@@ -24,6 +24,10 @@ namespace Inhumate.Unity.Examples.RTI {
             });
         }
 
+        void Update() {
+            if (Input.GetKeyDown(KeyCode.B)) DropBox();
+        }
+
         void FixedUpdate() {
             var body = GetComponent<Rigidbody>();
             if (body != null) {
@@ -55,7 +59,6 @@ namespace Inhumate.Unity.Examples.RTI {
                     transform.rotation *= Quaternion.AngleAxis(-turnTorque * Time.fixedDeltaTime * 3, transform.up);
                 }
             }
-            if (Input.GetKeyDown(KeyCode.B)) DropBox();
         }
 
         RTIEntity DropBox(string id = null) {

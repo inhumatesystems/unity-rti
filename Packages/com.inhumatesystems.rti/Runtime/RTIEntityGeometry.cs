@@ -41,10 +41,12 @@ namespace Inhumate.Unity.RTI {
             foreach (var renderer in renderers) renderer.enabled = false;
         }
 
-        internal override GeometryOperation.Types.Geometry GeometryData {
+        internal override Geometry GeometryData {
             get {
-                var geometry = new GeometryOperation.Types.Geometry {
-                    Usage = GeometryOperation.Types.Usage.Entity,
+                var geometry = new Geometry {
+                    Id = Id,
+                    OwnerClientId = RTI.ClientId,
+                    Usage = Geometry.Types.Usage.Entity,
                     Scalable = scalable,
                     Color = GetColor(color),
                     Transparency = 1 - opacity,

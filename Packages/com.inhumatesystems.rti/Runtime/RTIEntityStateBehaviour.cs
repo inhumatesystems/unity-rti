@@ -6,11 +6,9 @@ using Inhumate.RTI.Proto;
 namespace Inhumate.Unity.RTI {
 
     [RequireComponent(typeof(RTIEntity))]
-    public abstract class RTIEntityBehaviour<T> : MonoBehaviour where T : IMessage<T>, new() {
+    public abstract class RTIEntityStateBehaviour<T> : MonoBehaviour where T : IMessage<T>, new() {
 
         public abstract string ChannelName { get; }
-        public virtual bool Ephemeral => false;
-        public virtual bool Stateless => false;
 
         public bool publishing {
             get {
@@ -29,10 +27,10 @@ namespace Inhumate.Unity.RTI {
         protected RTIEntity entity;
 
         // Note that these are not shared between derived classes, because this is a generic class.
-        // Unlike the Unreal client equivalent RTIEntityBaseComponent.
-        private static Dictionary<string, List<RTIEntityBehaviour<T>>> instances = new Dictionary<string, List<RTIEntityBehaviour<T>>>();
+        // Unlike the Unreal client equivalent RTIEntityStateComponent.
+        private static Dictionary<string, List<RTIEntityStateBehaviour<T>>> instances = new Dictionary<string, List<RTIEntityStateBehaviour<T>>>();
         private static bool subscribed;
-        private static Inhumate.RTI.Client.UntypedListener listener;
+        private static Inhumate.RTI.UntypedListener listener;
         private static bool registeredChannel;
 
         private bool warnedIdNotFound;
@@ -40,7 +38,7 @@ namespace Inhumate.Unity.RTI {
         protected virtual void Start() {
             entity = GetComponent<RTIEntity>();
             entity.RegisterCommands(this);
-            if (!instances.ContainsKey(entity.id)) instances[entity.id] = new List<RTIEntityBehaviour<T>>();
+            if (!instances.ContainsKey(entity.id)) instances[entity.id] = new List<RTIEntityStateBehaviour<T>>();
             if (!instances[entity.id].Contains(this)) instances[entity.id].Add(this);
             if (!subscribed) {
                 if (!registeredChannel) RegisterChannel();
@@ -85,8 +83,7 @@ namespace Inhumate.Unity.RTI {
             RTI.Client.RegisterChannel(new Channel {
                 Name = ChannelName,
                 DataType = typeof(T).Name,
-                Ephemeral = Ephemeral,
-                Stateless = Stateless,
+                State = true,
                 FirstFieldId = true
             });
             registeredChannel = true;

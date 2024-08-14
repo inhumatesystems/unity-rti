@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 884689043}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657886, g: 0.49641275, b: 0.5748176, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -304,7 +304,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 0
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!1 &173453781
 GameObject:
@@ -365,7 +364,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 1
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!65 &173453784
 BoxCollider:
@@ -634,7 +632,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 0
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!1 &298333898
 GameObject:
@@ -1417,7 +1414,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 1
   lineWidth: 1
-  hidden: 0
   id: triggers-geo
 --- !u!65 &777554792
 BoxCollider:
@@ -1481,7 +1477,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 1
   lineWidth: 1
-  hidden: 0
   id: triggers
 --- !u!65 &777554795
 BoxCollider:
@@ -1543,7 +1538,7 @@ MonoBehaviour:
   titleFromName: 1
   title: 
   id: 
-  updateInterval: 0
+  publishInterval: 0
 --- !u!4 &790535713
 Transform:
   m_ObjectHideFlags: 0
@@ -1669,6 +1664,11 @@ PrefabInstance:
         type: 3}
       propertyPath: id
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4309274379945252470, guid: f24a4edc1292fbb4cbe559145ea7bb42,
+        type: 3}
+      propertyPath: titleFromName
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1930,7 +1930,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 0
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!1 &988312923
 GameObject:
@@ -2105,7 +2104,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 0
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!1 &1125915819
 GameObject:
@@ -2237,7 +2235,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 0
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!1 &1226615657
 GameObject:
@@ -2386,7 +2383,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 0
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!114 &1317606734
 MonoBehaviour:
@@ -2816,7 +2812,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 0
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!1 &1538016106
 GameObject:
@@ -3031,7 +3026,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 0
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!1 &1598271267
 GameObject:
@@ -3132,7 +3126,6 @@ MonoBehaviour:
   labelOpacity: 0.55
   wireframe: 0
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!64 &1639632024
 MeshCollider:
@@ -3180,7 +3173,6 @@ MonoBehaviour:
   labelOpacity: 0.55
   wireframe: 1
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!1001 &1682501906
 PrefabInstance:
@@ -3749,7 +3741,7 @@ MonoBehaviour:
   titleFromName: 1
   title: 
   id: 
-  updateInterval: 0
+  publishInterval: 0
 --- !u!195 &1971135191
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -3870,8 +3862,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   publish: 1
-  updateInterval: 1
   minPublishInterval: 10
+  maxPublishInterval: 10
   positionThreshold: 0.001
   rotationThreshold: 0.01
   velocityThreshold: 0.1
@@ -4179,7 +4171,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 0
   lineWidth: 1
-  hidden: 0
   id: 
 --- !u!1 &2027002601
 GameObject:
@@ -4345,7 +4336,6 @@ MonoBehaviour:
   labelOpacity: 1
   wireframe: 0
   lineWidth: 3
-  hidden: 0
   id: 
 --- !u!1 &2091012676
 GameObject:

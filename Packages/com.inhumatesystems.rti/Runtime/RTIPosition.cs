@@ -1,18 +1,18 @@
 using System.Collections.Generic;
 using Inhumate.RTI.Proto;
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
 using UnityEngine;
 using NaughtyAttributes;
 
 namespace Inhumate.Unity.RTI {
 
-    public class RTIPosition : RTIEntityBehaviour<EntityPosition> {
+    public class RTIPosition : RTIEntityStateBehaviour<EntityPosition> {
 
         public bool publish = true;
         [ShowIf("publish")]
-        public float updateInterval = 1f;
+        public float minPublishInterval = 1f;
         [ShowIf("publish")]
-        public float minPublishInterval = 10f;
+        public float maxPublishInterval = 10f;
         [ShowIf("publish")]
         public float positionThreshold = 0.001f;
         [ShowIf("publish")]
@@ -35,8 +35,7 @@ namespace Inhumate.Unity.RTI {
         public bool setBodyKinematic;
 
 
-        public override string ChannelName => RTIConstants.PositionChannel;
-        public override bool Stateless => true;
+        public override string ChannelName => RTIChannel.Position;
 
         private float lastPublishTime;
         private float lastPositionTime = -1f;
@@ -66,7 +65,7 @@ namespace Inhumate.Unity.RTI {
             entity.OnUpdated += OnUpdated;
         }
 
-        protected void OnUpdated(EntityOperation.Types.EntityData data) {
+        protected void OnUpdated(Entity data) {
             if (receiving && receiveCount == 0) {
                 OnMessage(data.Position);
             }
@@ -159,8 +158,8 @@ namespace Inhumate.Unity.RTI {
                 localVelocity = transform.InverseTransformDirection(velocity);
             }
 
-            if (publish && publishing && Time.fixedTime - lastPublishTime > updateInterval
-                    && (Time.fixedTime - lastPublishTime > minPublishInterval 
+            if (publish && publishing && Time.fixedTime - lastPublishTime > minPublishInterval
+                    && (Time.fixedTime - lastPublishTime > maxPublishInterval 
                         || positionThreshold < float.Epsilon || rotationThreshold < float.Epsilon || velocityThreshold < float.Epsilon
                         || (transform.position - lastPosition).magnitude > positionThreshold
                         || Quaternion.Angle(transform.rotation, lastRotation) > rotationThreshold
@@ -211,7 +210,7 @@ namespace Inhumate.Unity.RTI {
                     if (lastPositionTime > 0 && lastVelocity.HasValue) {
                         // Interpolate using velocity
                         targetPosition = lastPosition + transform.TransformDirection(lastVelocity.Value * (Time.fixedTime - lastPositionTime));
-                    } else if (lastPositionTime > 0 && previousPositionTime > 0 && lastPositionTime - previousPositionTime > 1e-5f && lastPositionTime - previousPositionTime < updateInterval * 2.5f) {
+                    } else if (lastPositionTime > 0 && previousPositionTime > 0 && lastPositionTime - previousPositionTime > 1e-5f && lastPositionTime - previousPositionTime < minPublishInterval * 2.5f) {
                         // or else lerp based on last and previous position
                         targetPosition = Vector3.Lerp(lastPosition, lastPosition + (lastPosition - previousPosition), (Time.fixedTime - lastPositionTime) / (lastPositionTime - previousPositionTime));
                     } else if (lastPositionTime > 0) {
@@ -231,7 +230,7 @@ namespace Inhumate.Unity.RTI {
                     if (lastRotationTime > 0 && lastAngularVelocity.HasValue) {
                         // Interpolate using angular velocity
                         targetRotation = Quaternion.Euler(lastAngularVelocity.Value * (Time.time - lastRotationTime)) * lastRotation;
-                    } else if (lastRotationTime > 0 && previousRotationTime > 0 && lastRotationTime - previousRotationTime > 1e-5f && lastRotationTime - previousRotationTime < updateInterval * 2.5f) {
+                    } else if (lastRotationTime > 0 && previousRotationTime > 0 && lastRotationTime - previousRotationTime > 1e-5f && lastRotationTime - previousRotationTime < minPublishInterval * 2.5f) {
                         // or else slerp based on last and previous rotation
                         targetRotation = Quaternion.Slerp(lastRotation, (lastRotation * Quaternion.Inverse(previousRotation)) * lastRotation, (Time.time - lastRotationTime) / (lastRotationTime - previousRotationTime));
                     } else if (lastRotationTime > 0) {

@@ -1,4 +1,4 @@
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
 using Inhumate.RTI.Proto;
 
 namespace Inhumate.Unity.RTI {
@@ -60,7 +60,7 @@ namespace Inhumate.Unity.RTI {
         }
 
         private static void PublishAndReceiveIfNotConnected(RuntimeControl message) {
-            RTI.Publish(RTIConstants.ControlChannel, message);
+            RTI.Publish(RTIChannel.Control, message);
             if (!RTI.IsConnected) RTI.OnRuntimeControl("internal", message);
         }
     }

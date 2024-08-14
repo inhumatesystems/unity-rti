@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Inhumate.RTI.Proto;
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
 
 namespace Inhumate.Unity.RTI {
 
@@ -82,7 +82,7 @@ namespace Inhumate.Unity.RTI {
         }
 
         protected void Publish() {
-            RTI.Publish(RTIConstants.InjectionChannel, injection);
+            RTI.Publish(RTIChannel.Injection, injection);
         }
 
     }

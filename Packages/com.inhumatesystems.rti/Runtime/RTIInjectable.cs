@@ -4,7 +4,7 @@ using UnityEngine;
 
 using Inhumate.RTI.Proto;
 using System;
-using Inhumate.RTI.Client;
+using Inhumate.RTI;
 using System.Linq;
 
 namespace Inhumate.Unity.RTI {
@@ -242,7 +242,7 @@ namespace Inhumate.Unity.RTI {
         }
 
         protected void PublishClearInjections() {
-            RTI.Publish(RTIConstants.InjectionOperationChannel, new InjectionOperation {
+            RTI.Publish(RTIChannel.InjectionOperation, new InjectionOperation {
                 Clear = name
             });
         }
@@ -262,9 +262,7 @@ namespace Inhumate.Unity.RTI {
                 EndMode = endMode
             };
             foreach (var parameter in parameters) injectable.Parameters.Add(parameter.ToProto());
-            RTI.Publish(RTIConstants.InjectablesChannel, new Injectables {
-                Injectable = injectable
-            });
+            RTI.Publish(RTIChannel.Injectable, injectable);
         }
 
         public void PublishInjections() {
@@ -272,7 +270,7 @@ namespace Inhumate.Unity.RTI {
         }
 
         protected void Publish(Injection injection) {
-            RTI.Publish(RTIConstants.InjectionChannel, injection);
+            RTI.Publish(RTIChannel.Injection, injection);
         }
 
         public Injection GetInjection(string id) {

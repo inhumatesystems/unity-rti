@@ -1,11 +1,12 @@
 using UnityEngine;
 using UnityEditor;
 using Inhumate.RTI.Proto;
+using NaughtyAttributes.Editor;
 
 namespace Inhumate.Unity.RTI {
 
     [CustomEditor(typeof(RTIInjectable))]
-    public class RTIInjectableEditor : Editor {
+    public class RTIInjectableEditor : NaughtyInspector {
 
         public override void OnInspectorGUI() {
             var injectable = (RTIInjectable)target;
@@ -53,7 +54,7 @@ namespace Inhumate.Unity.RTI {
                     }
                 }
             }
-            this.DrawDefaultInspector();
+            base.OnInspectorGUI();
         }
     }
 }

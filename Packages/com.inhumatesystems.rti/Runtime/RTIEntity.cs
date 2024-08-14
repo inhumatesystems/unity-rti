@@ -1,11 +1,12 @@
 using System;
 using System.Linq;
-using Inhumate.RTI.Client;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using Inhumate.RTI;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 using NaughtyAttributes;
-using System.Collections.Generic;
-using System.Reflection;
 
 namespace Inhumate.Unity.RTI {
 
@@ -23,18 +24,19 @@ namespace Inhumate.Unity.RTI {
         public string title;
         [Tooltip("Unique ID used to identify this entity. Leave blank to generate a random ID when the entity is created.")]
         public string id;
-
-        public float updateInterval = 0f;
+        [Tooltip("Interval in seconds between periodic publishing. Set to 0 to only publish on create/destroy/update requests.")]
+        public float publishInterval = 0f;
 
         public bool persistent { get; internal set; }
-        public bool created { get; internal set; }
+        public bool published { get; internal set; }
+        public bool deleted { get; internal set; }
         public bool owned { get; internal set; } = true;
         public string ownerClientId { get; internal set; }
         public float lastOwnershipChangeTime { get; internal set; }
 
         public bool publishing {
             get {
-                return owned && created && (RTI.state == RuntimeState.Running || RTI.state == RuntimeState.Unknown);
+                return owned && published && (RTI.state == RuntimeState.Running || RTI.state == RuntimeState.Unknown);
             }
         }
 
@@ -50,11 +52,11 @@ namespace Inhumate.Unity.RTI {
             }
         }
 
-        public event Action<EntityOperation.Types.EntityData> OnCreated;
-        public event Action<EntityOperation.Types.EntityData> OnUpdated;
+        public event Action<Entity> OnCreated;
+        public event Action<Entity> OnUpdated;
         public event Action OnOwnershipChanged;
 
-        public string CommandsChannelName => $"{RTIConstants.CommandsChannel}/{id}";
+        public string CommandsChannelName => $"{RTIChannel.Commands}/{id}";
         public Command[] Commands => commands.Values.ToArray();
         private Dictionary<string, Command> commands = new Dictionary<string, Command>();
         private Dictionary<string, RTIConnection.CommandHandler> commandHandlers = new Dictionary<string, RTIConnection.CommandHandler>();
@@ -120,6 +122,15 @@ namespace Inhumate.Unity.RTI {
         }
 
         public bool RegisterCommand(Command command, RTIConnection.CommandHandler handler) {
+            if (commandsListener == null) {
+                RTI.Client.RegisterChannel(new Channel {
+                    Name = CommandsChannelName,
+                    DataType = typeof(Commands).Name,
+                    Ephemeral = true
+                });
+                commandsListener = RTI.Subscribe<Commands>(CommandsChannelName, OnCommandsMessage);
+                ownCommandsListener = RTI.Subscribe<Commands>(RTI.Client.OwnChannelPrefix + CommandsChannelName, OnCommandsMessage);
+            }
             var name = command.Name.ToLower();
             if (commands.ContainsKey(name) && commands[name] != command) {
                 return false;
@@ -151,10 +162,11 @@ namespace Inhumate.Unity.RTI {
 
         public void AssumeOwnership() {
             if (owned) return;
-            RTI.Publish(RTIConstants.EntityChannel, new EntityOperation {
-                Id = id,
-                ClientId = RTI.ClientId,
-                AssumeOwnership = new Google.Protobuf.WellKnownTypes.Empty()
+            RTI.Publish(RTIChannel.EntityOperation, new EntityOperation {
+                AssumeOwnership = new EntityOperation.Types.EntityClient {
+                    EntityId = id,
+                    ClientId = RTI.ClientId
+                }
             });
             owned = true;
             ownerClientId = RTI.ClientId;
@@ -163,10 +175,11 @@ namespace Inhumate.Unity.RTI {
 
         public void ReleaseOwnership(string newOwnerClientId = null) {
             if (!owned) return;
-            RTI.Publish(RTIConstants.EntityChannel, new EntityOperation {
-                Id = id,
-                ClientId = RTI.ClientId,
-                ReleaseOwnership = new Google.Protobuf.WellKnownTypes.Empty()
+            RTI.Publish(RTIChannel.EntityOperation, new EntityOperation {
+                ReleaseOwnership = new EntityOperation.Types.EntityClient {
+                    EntityId = id,
+                    ClientId = RTI.ClientId
+                }
             });
             owned = false;
             ownerClientId = newOwnerClientId;
@@ -182,17 +195,9 @@ namespace Inhumate.Unity.RTI {
         }
 
         void Start() {
-            if (RTI.GetEntityById(id)) {
-                Debug.LogWarning($"Entity {id} has already been registered", this);
+            if (!RTI.GetEntityById(id)) {
+                RTI.RegisterEntity(this);
             }
-            RTI.RegisterEntity(this);
-            RTI.Client.RegisterChannel(new Channel {
-                Name = CommandsChannelName,
-                DataType = typeof(Commands).Name,
-                Ephemeral = true
-            });
-            commandsListener = RTI.Subscribe<Commands>(CommandsChannelName, OnCommandsMessage);
-            ownCommandsListener = RTI.Subscribe<Commands>(RTI.Client.OwnChannelPrefix + CommandsChannelName, OnCommandsMessage);
         }
 
         string GenerateId() {
@@ -209,30 +214,26 @@ namespace Inhumate.Unity.RTI {
             }
         }
 
-        private float lastUpdateTime;
+        private float lastPublishTime;
 
         void Update() {
-            if (owned && RTI.IsConnected && RTI.persistentEntityOwnerClientId != null && (RTI.state == RuntimeState.Running || RTI.state == RuntimeState.Unknown)) {
-                if (!created) {
+            if (owned && !deleted && RTI.IsConnected && RTI.persistentEntityOwnerClientId != null && (RTI.state == RuntimeState.Running || RTI.state == RuntimeState.Unknown)) {
+                if (!published) {
                     if (persistent && RTI.persistentEntityOwnerClientId != null && !RTI.IsPersistentEntityOwner) {
                         owned = false;
                         ownerClientId = RTI.persistentEntityOwnerClientId;
                         InvokeOnOwnershipChanged();
                     } else {
-                        if (RTI.debugEntities) Debug.Log($"RTI publish create entity {id}", this);
-                        RTI.Publish(RTIConstants.EntityChannel, new EntityOperation {
-                            Id = id,
-                            ClientId = RTI.ClientId,
-                            Create = EntityData
-                        });
+                        if (RTI.debugEntities) Debug.Log($"RTI publish entity {id}", this);
+                        Publish();
                     }
-                    created = true;
-                } else if (updateRequested || (updateInterval > 1e-5f && Time.time - lastUpdateTime > updateInterval)) {
+                    published = true;
+                } else if (updateRequested || (publishInterval > 1e-5f && Time.time - lastPublishTime > publishInterval)) {
                     updateRequested = false;
-                    PublishUpdate();
+                    Publish();
                 }
             } else if (owned && RTI.state == RuntimeState.Playback) {
-                if (!created && this.gameObject != null) Destroy(this.gameObject);
+                if (!published && this.gameObject != null) Destroy(this.gameObject);
             }
         }
 
@@ -276,36 +277,30 @@ namespace Inhumate.Unity.RTI {
         }
 
         void OnEnable() {
-            if (owned && created && RTI.IsConnected) PublishUpdate();
+            if (owned && published && !deleted && RTI.IsConnected) Publish();
         }
 
         void OnDisable() {
-            if (owned && created && RTI.IsConnected) PublishUpdate();
+            if (owned && published && !deleted && gameObject.activeInHierarchy && RTI.IsConnected) Publish();
         }
 
-        void PublishUpdate() {
-            lastUpdateTime = Time.time;
-            RTI.Publish(RTIConstants.EntityChannel, new EntityOperation {
-                Id = id,
-                ClientId = RTI.ClientId,
-                Update = EntityData
-            });
+        void Publish() {
+            lastPublishTime = Time.time;
+            RTI.Publish(RTIChannel.Entity, EntityData);
         }
 
         void OnApplicationQuit() {
-            if (created && owned && !persistent) OnDestroy();
+            if (published && owned && !persistent) OnDestroy();
         }
 
         void OnDestroy() {
             bool hopefullyOtherClientTakesOver = RTI.quitting && persistent && publishing && RTI.Client.KnownClients.Count(c => c.Application == RTI.Client.Application) > 1;
-            if (created && owned && RTI.IsConnected && !hopefullyOtherClientTakesOver) {
-                created = false;
-                if (RTI.debugEntities) Debug.Log($"RTI publish destroy {id}");
-                RTI.Publish(RTIConstants.EntityChannel, new EntityOperation {
-                    Id = id,
-                    ClientId = RTI.ClientId,
-                    Destroy = new Google.Protobuf.WellKnownTypes.Empty()
-                });
+            if (published && owned && RTI.IsConnected && !hopefullyOtherClientTakesOver) {
+                if (RTI.debugEntities) Debug.Log($"RTI publish deleted entity {id}");
+                deleted = true;
+                Publish();
+            } else if (!owned && !deleted) {
+                Debug.LogWarning($"Entity {id} destroyed but not owned");
             }
             if (commandsListener != null) {
                 RTI.Unsubscribe(commandsListener);
@@ -361,7 +356,7 @@ namespace Inhumate.Unity.RTI {
             }
         }
 
-        internal EntityOperation.Types.EntityData EntityData {
+        internal Entity EntityData {
             get {
                 Inhumate.RTI.Proto.Color col = null;
                 if (color.a > 1e-5 || color.maxColorComponent > 1e-5) {
@@ -371,14 +366,16 @@ namespace Inhumate.Unity.RTI {
                         Blue = (int)Math.Round(color.b * 255)
                     };
                 }
-                return new EntityOperation.Types.EntityData {
+                return new Entity {
+                    Id = id,
+                    OwnerClientId = RTI.ClientId,
                     Type = type,
                     Category = category,
                     Domain = domain,
                     Lvc = lvc,
                     Dimensions = size.magnitude < 1e-5 && center.magnitude < 1e-5
                         ? null
-                        : new EntityOperation.Types.Dimensions {
+                        : new Entity.Types.Dimensions {
                             Length = size.z,
                             Width = size.x,
                             Height = size.y,
@@ -391,12 +388,16 @@ namespace Inhumate.Unity.RTI {
                     Color = col,
                     Title = titleFromName ? name.Replace("(Clone)", "") : !string.IsNullOrWhiteSpace(title) ? title : "",
                     Position = GetComponent<RTIPosition>() != null ? RTIPosition.PositionMessageFromTransform(this.transform) : null,
-                    Disabled = !enabled || !gameObject.activeInHierarchy
+                    Disabled = !enabled || !gameObject.activeInHierarchy,
+                    Deleted = deleted
                 };
             }
         }
 
-        internal void SetPropertiesFromEntityData(EntityOperation.Types.EntityData data) {
+        internal void SetPropertiesFromEntityData(Entity data) {
+            id = data.Id;
+            ownerClientId = data.OwnerClientId;
+            deleted = data.Deleted;
             type = data.Type;
             category = data.Category;
             domain = data.Domain;
@@ -414,11 +415,11 @@ namespace Inhumate.Unity.RTI {
             if (!data.Disabled && !gameObject.activeInHierarchy) gameObject.SetActive(true);
         }
 
-        internal void InvokeOnCreated(EntityOperation.Types.EntityData data) {
+        internal void InvokeOnCreated(Entity data) {
             OnCreated?.Invoke(data);
         }
 
-        internal void InvokeOnUpdated(EntityOperation.Types.EntityData data) {
+        internal void InvokeOnUpdated(Entity data) {
             OnUpdated?.Invoke(data);
         }
 
