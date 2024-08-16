@@ -299,8 +299,6 @@ namespace Inhumate.Unity.RTI {
                 if (RTI.debugEntities) Debug.Log($"RTI publish deleted entity {id}");
                 deleted = true;
                 Publish();
-            } else if (!owned && !deleted) {
-                Debug.LogWarning($"Entity {id} destroyed but not owned");
             }
             if (commandsListener != null) {
                 RTI.Unsubscribe(commandsListener);

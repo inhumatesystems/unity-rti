@@ -680,11 +680,13 @@ namespace Inhumate.Unity.RTI {
                     }
                 case EntityOperation.WhichOneofCase.TransferOwnership: {
                         var entity = GetEntityById(message.TransferOwnership.EntityId);
-                        if (entity != null && message.TransferOwnership.ClientId != ClientId) {
+                        if (entity != null) {
                             if (entity.owned && entity.ownerClientId == ClientId && message.TransferOwnership.ClientId != ClientId) {
+                                if (debugEntities) Debug.Log($"Transfer entity {entity.id} - releasing ownership");
                                 entity.ReleaseOwnership(message.TransferOwnership.ClientId);
                                 OnEntityOwnershipReleased?.Invoke(entity);
                             } else if (!entity.owned && entity.ownerClientId != ClientId && message.TransferOwnership.ClientId == ClientId) {
+                                if (debugEntities) Debug.Log($"Transfer entity {entity.id} - assuming ownership");
                                 entity.AssumeOwnership();
                                 OnEntityOwnershipAssumed?.Invoke(entity);
                             } else if (entity.owned) {
