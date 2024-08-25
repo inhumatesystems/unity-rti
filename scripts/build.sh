@@ -5,7 +5,7 @@ package=com.inhumatesystems.rti
 [ -z "$VERSION" ] && VERSION=$CI_COMMIT_TAG
 [ -z "$VERSION" -a ! -z "$CI_PIPELINE_IID" ] && VERSION=0.0.$CI_PIPELINE_IID
 [ -z "$VERSION" ] && VERSION=0.0.1-dev-version
-filename="inhumate-unity-rti-client-${VERSION}"
+filename="inhumate-unity-rti-${VERSION}"
 
 cd "$(dirname $0)/.."
 
