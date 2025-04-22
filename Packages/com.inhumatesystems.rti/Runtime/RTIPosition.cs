@@ -66,7 +66,7 @@ namespace Inhumate.Unity.RTI {
         }
 
         protected void OnUpdated(Entity data) {
-            if (receiving && receiveCount == 0) {
+            if (receiving && receiveCount == 0 && data.Position != null) {
                 OnMessage(data.Position);
             }
         }
