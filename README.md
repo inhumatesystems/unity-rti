@@ -1,5 +1,9 @@
 # Inhumate RTI Integration Package for Unity
 
+Package for integrating your Unity-based simulator or application with the RTI (Runtime Infrastructure) of [Inhumate Suite](https://inhumatesystems.com/products/suite/).
+
+Read more in the [documentation](https://docs.inhumatesystems.com/integrations/unity/).
+
 ## Dependencies
 
 This package uses the brilliant NaughtyAttributes package. Add this line to your `manifest.json` dependencies:
@@ -28,22 +32,6 @@ Or OpenUPM registry:
 You can use this package from a local tarball (`.tgz` file).
 
 See the section [Installing a package from a local tarball file](https://docs.unity3d.com/2020.3/Documentation/Manual/upm-ui-tarball.html) from the Unity manual.
-
-## Usage from Inhumate registry
-
-Add this to your `manifest.json`
-
-```json
-  "scopedRegistries": [
-    {
-      "name": "com.inhumatesystems",
-      "url": "https://gitlab.com/api/v4/projects/${TODO}/packages/npm/",
-      "scopes": [
-        "com.inhumatesystems"
-      ]
-    }
-  ],
-```
 
 ## Development
 
