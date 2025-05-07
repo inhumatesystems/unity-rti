@@ -13,3 +13,4 @@ tmp-update-dependencies/
 [Gg]enerated/
 mono_crash*
 /protobuf/
+.DS_Store
