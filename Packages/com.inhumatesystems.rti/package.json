@@ -8,6 +8,9 @@
   "changelogUrl": "https://gitlab.com/inhumate/rti/activity",
   "licensesUrl": "https://gitlab.com/inhumate/rti/-/blob/master/LICENSE.txt",
   "license": "Apache-2.0",
+  "author": {
+    "name": "Inhumate"
+  },
   "samples": [
     {
       "displayName": "RTI Example",

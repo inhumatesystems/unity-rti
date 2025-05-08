@@ -6,10 +6,10 @@ Temp/
 Build/
 Builds/
 UserSettings/
-Packages/com.inhumatesystems.rti/Samples~/
 obj/
 .vscode/
 tmp-update-dependencies/
 mono_crash*
 /protobuf/
 .DS_Store
+Packages/com.unity.asset-store-tools
