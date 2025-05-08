@@ -19,12 +19,12 @@ default:
 build:
   stage: build
   script: 
-    - "[ -z \"${CI_COMMIT_TAG}\" ] || scripts/check_version.sh "
+    - "[ -z \"${CI_COMMIT_TAG}\" ] || scripts/check_version.sh ${CI_COMMIT_TAG}"
     - apt-get -qq update && apt-get -qq install unzip
     - sed -i "s/PROJECT_ID/${REGISTRY_PROJECT_ID}/g" Packages/*inhumate*/package.json
     - scripts/ci-before-script.sh
-    - scripts/linux_get_protobuf.sh
-    - scripts/generate.sh
+    # - scripts/linux_get_protobuf.sh
+    # - scripts/generate.sh
     - scripts/build.sh
   cache:
     key: "${CI_PROJECT_ID}-${CI_COMMIT_REF_SLUG}"
