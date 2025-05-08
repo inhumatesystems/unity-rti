@@ -2,7 +2,7 @@
   "name": "com.inhumatesystems.rti",
   "displayName": "Inhumate RTI",
   "description": "Inhumate RTI Client - for multiplayer networking, co-simulation etc",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "unity": "2018.3",
   "documentationUrl": "https://gitlab.com/inhumate/rti/-/wikis/Unity",
   "changelogUrl": "https://gitlab.com/inhumate/rti/activity",
