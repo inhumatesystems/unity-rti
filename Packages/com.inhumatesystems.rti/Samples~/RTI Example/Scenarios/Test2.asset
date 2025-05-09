@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7cb681cd512107b29c4dcc100fa8434, type: 3}
   m_Name: Test2
   m_EditorClassIdentifier: 
-  sceneName: RTITest2Scenario
+  sceneName: Test2
   description: 
+  parameters: []

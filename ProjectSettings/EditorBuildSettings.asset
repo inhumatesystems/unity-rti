@@ -6,12 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Samples/RTI Example/RTIHome.unity
+    path: Assets/Samples/RTI Example/Home.unity
     guid: c8cb6b0a641059cc89522d8d42b5189a
   - enabled: 1
-    path: Assets/Samples/RTI Example/RTITestScenario.unity
+    path: Assets/Samples/RTI Example/Demo.unity
     guid: 7606f757a3dbcc99b86f8e7f4277b891
   - enabled: 1
-    path: Assets/Samples/RTI Example/RTITest2Scenario.unity
+    path: Assets/Samples/RTI Example/Test2.unity
     guid: cc929a8560f2204438b8a6334aff972f
   m_configObjects: {}
