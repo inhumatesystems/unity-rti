@@ -14,7 +14,7 @@ namespace Inhumate.Unity.RTI {
 
     public class RTIConnection : MonoBehaviour {
 
-        public const string IntegrationVersion = "1.0.4";
+        public const string IntegrationVersion = "1.0.5";
 
         public bool autoConnect = true;
 
