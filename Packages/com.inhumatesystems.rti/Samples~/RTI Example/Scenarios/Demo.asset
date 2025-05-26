@@ -23,39 +23,46 @@ MonoBehaviour:
     type: 0
     choices: 
     defaultValue: default value
+    required: 0
   - name: text
     label: 
     description: description
     type: 1
     choices: 
-    defaultValue: default value
+    defaultValue: default text
+    required: 1
   - name: switch
     label: 
     description: description
     type: 4
     choices: 
     defaultValue: true
+    required: 1
   - name: checkbox
     label: 
     description: description
     type: 5
     choices: 
     defaultValue: 
+    required: 0
   - name: float
     label: 
     description: description
     type: 2
     choices: 
     defaultValue: 1.23
+    required: 0
   - name: integer
     label: 
     description: description
     type: 3
     choices: 
-    defaultValue: 345
+    defaultValue: 
+    required: 1
   - name: choice
     label: 
     description: description
     type: 6
     choices: foo|bar|baz
     defaultValue: bar
+    required: 0

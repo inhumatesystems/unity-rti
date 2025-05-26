@@ -22,13 +22,16 @@ namespace Inhumate.Unity.RTI {
 
         public string defaultValue;
 
+        public bool required;
+
         public Inhumate.RTI.Proto.Parameter ToProto() {
             var proto = new Inhumate.RTI.Proto.Parameter {
                 Name = name,
                 Label = label,
                 Description = description,
                 DefaultValue = defaultValue,
-                Type = type.ToString().ToLower()
+                Type = type.ToString().ToLower(),
+                Required = required
             };
             if (type == RTIParameterType.Choice && choices.Length > 0) {
                 if (choices.Contains("|")) {

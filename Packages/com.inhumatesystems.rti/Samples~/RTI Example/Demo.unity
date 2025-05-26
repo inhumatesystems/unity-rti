@@ -495,12 +495,21 @@ MonoBehaviour:
     type: 0
     choices: 
     defaultValue: hombres
+    required: 0
   - name: add
     label: Add stuff to title
     description: 
     type: 4
     choices: 
     defaultValue: 
+    required: 0
+  - name: choose
+    label: Choose one
+    description: 
+    type: 6
+    choices: A,B,C
+    defaultValue: 
+    required: 1
 --- !u!1 &281248789
 GameObject:
   m_ObjectHideFlags: 0
