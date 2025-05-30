@@ -1,37 +1,38 @@
 # Inhumate RTI Integration Package for Unity
 
-Package for integrating your Unity-based simulator or application with the RTI (Runtime Infrastructure) of [Inhumate Suite](https://inhumatesystems.com/products/suite/).
+Package for integrating your Unity-based simulator or application with Inhumate RTI (Runtime Infrastructure), part of [Inhumate Suite](https://inhumatesystems.com/products/suite/).
 
 Read more in the [documentation](https://docs.inhumatesystems.com/integrations/unity/).
 
-## Dependencies
+## Installation
 
-This package uses the brilliant NaughtyAttributes package. Add this line to your `manifest.json` dependencies:
+### OpenUPM
+
+A simple way to install the package is using the OpenUPM [command-line tool](https://openupm.com/packages/com.inhumatesystems.rti/#modal-commandlinetool):
+
+```sh
+openupm add com.inhumatesystems.rti
+```
+
+If you don't feel comfortable with the command-line tool you can also [manually install](https://openupm.com/packages/com.inhumatesystems.rti/#modal-manualinstallation) from OpenUPM using the package manager in Unity.
+
+### Install from tarball
+
+You can install this package from a tarball (`.tgz` file) [downloaded from Inhumate](https://get.inhumatesystems.com/product/unity-rti).
+
+See the section [Installing a UPM package from a local tarball file](https://docs.unity3d.com/2022.3/Documentation/Manual/upm-ui-tarball.html) from the Unity manual for instructions.
+
+This method requires solving dependencies manually (see below).
+
+### Dependencies
+
+This package uses the brilliant NaughtyAttributes package. 
+Get it from [OpenUPM](https://openupm.com/packages/com.dbrizov.naughtyattributes/) or [Unity Asset Store](https://assetstore.unity.com/packages/tools/utilities/naughtyattributes-129996).
+Or directly from github, by adding this line to your `manifest.json` dependencies:
 
 ```json
     "com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm",
 ```
-
-Or OpenUPM registry:
-
-```json
-  "scopedRegistries": [
-    {
-      "name": "package.openupm.com",
-      "url": "https://package.openupm.com",
-      "scopes": [
-        "com.dbrizov.naughtyattributes",
-        "com.openupm"
-      ]
-    }
-  ],
-```
-
-## Usage from tarball
-
-You can use this package from a local tarball (`.tgz` file).
-
-See the section [Installing a package from a local tarball file](https://docs.unity3d.com/2020.3/Documentation/Manual/upm-ui-tarball.html) from the Unity manual.
 
 ## Development
 

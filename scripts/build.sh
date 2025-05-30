@@ -13,6 +13,7 @@ unity=$(which Unity)
 [ -e "$unity" ] || unity=/opt/Unity/Editor/Unity
 [ -e "$unity" ] || unity=/opt/unity/Editor/Unity
 [ -e "$unity" ] || unity=$(echo $HOME/Unity/Hub/Editor/2022*/Editor/Unity | awk '{print $NF}')
+[ -e "$unity" ] || unity=$(echo /Applications/Unity/Hub/Editor/2022*/Unity.app/Contents/MacOS/Unity | awk '{print $NF}')
 
 if [ ! -e $unity -o -z "$unity" ]; then
     echo "uhm... where's unity at?"
@@ -27,7 +28,9 @@ $unity -logFile -batchmode -nographics -quit -projectPath .
 rm -rf Build
 mkdir -p Build/package
 cp -rfp Packages/$package/* Build/package/
-mkdir -p Build/package/Samples~
-cp -rfp Assets/* Build/package/Samples~/
+
+# Remove naughty attributes from package.json - to allow for asset store version or other source...
+cat Packages/$package/package.json | grep -v naughtyattributes > Build/package/package.json
+
 cd Build
 tar cfz $filename.tgz package
