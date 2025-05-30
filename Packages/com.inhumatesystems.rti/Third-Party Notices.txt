@@ -1,0 +1,5 @@
+This packages contains some third-party library code in the form of DLLs:
+- Inhumate RTI client - Apache 2.0 license - https://github.com/inhumatesystems/rti-client?tab=Apache-2.0-1-ov-file#readme
+- Google Protobuf - BSD3 license - https://licenses.nuget.org/BSD-3-Clause
+- Utf8Json - MIT license - https://github.com/neuecc/Utf8Json/?tab=MIT-1-ov-file#readme
+- Required System.* DLLs from .NET - https://github.com/dotnet/core/blob/main/license-information.md
