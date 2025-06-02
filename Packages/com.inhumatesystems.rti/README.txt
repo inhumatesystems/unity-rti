@@ -5,12 +5,6 @@ Package for integrating your Unity-based simulator or application with the RTI
 
 For more information, see https://inhumatesystems.com/products/suite/
 
-## Dependencies
-
-This package depends on NaughtyAttributes, available via
-- Unity Asset Store - https://assetstore.unity.com/packages/tools/utilities/naughtyattributes-129996
-- OpenUPM - https://openupm.com/packages/com.dbrizov.naughtyattributes/
-
 ## Quick Start
 
 To connect your simulator/application to the Inhumate RTI:

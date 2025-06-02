@@ -22,13 +22,13 @@ You can install this package from a tarball (`.tgz` file) [downloaded from Inhum
 
 See the section [Installing a UPM package from a local tarball file](https://docs.unity3d.com/2022.3/Documentation/Manual/upm-ui-tarball.html) from the Unity manual for instructions.
 
-This method requires solving dependencies manually (see below).
-
 ### Dependencies
 
 This package uses the brilliant NaughtyAttributes package. 
-Get it from [OpenUPM](https://openupm.com/packages/com.dbrizov.naughtyattributes/) or [Unity Asset Store](https://assetstore.unity.com/packages/tools/utilities/naughtyattributes-129996).
-Or directly from github, by adding this line to your `manifest.json` dependencies:
+If you install via OpenUPM it should be solved automatically.
+For local tarball or asset store version, the dependency is bundled.
+
+If you need to, you can get NaughtyAttributes from [OpenUPM](https://openupm.com/packages/com.dbrizov.naughtyattributes/) or [Unity Asset Store](https://assetstore.unity.com/packages/tools/utilities/naughtyattributes-129996), or directly from github, by adding this line to your `manifest.json` dependencies:
 
 ```json
     "com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm",
