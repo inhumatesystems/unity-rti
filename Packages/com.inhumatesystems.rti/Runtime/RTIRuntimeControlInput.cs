@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
     public class RTIRuntimeControlInput : MonoBehaviour {
         void Update() {
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) {

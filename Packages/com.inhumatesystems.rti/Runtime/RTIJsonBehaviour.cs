@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Google.Protobuf;
 using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     public abstract class RTIJsonBehaviour<T> : MonoBehaviour {
 

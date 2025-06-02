@@ -3,7 +3,7 @@ using Google.Protobuf;
 using UnityEngine;
 using Inhumate.RTI.Proto;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [RequireComponent(typeof(RTIEntity))]
     public abstract class RTIEntityStateBehaviour<T> : MonoBehaviour where T : IMessage<T>, new() {

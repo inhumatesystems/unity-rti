@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace Inhumate.Unity.RTI.Proto {
+namespace Inhumate.UnityRTI.Proto {
 
   /// <summary>Holder for reflection information generated from NavMeshAgentState.proto</summary>
   public static partial class NavMeshAgentStateReflection {
@@ -31,9 +31,9 @@ namespace Inhumate.Unity.RTI.Proto {
             "cl9zcGVlZBgEIAEoAkIbqgIYSW5odW1hdGUuVW5pdHkuUlRJLlByb3RvYgZw",
             "cm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Inhumate.Unity.RTI.Proto.Vector3Reflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Inhumate.UnityRTI.Proto.Vector3Reflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Inhumate.Unity.RTI.Proto.NavMeshAgentState), global::Inhumate.Unity.RTI.Proto.NavMeshAgentState.Parser, new[]{ "Id", "Destination", "Speed", "AngularSpeed" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Inhumate.UnityRTI.Proto.NavMeshAgentState), global::Inhumate.UnityRTI.Proto.NavMeshAgentState.Parser, new[]{ "Id", "Destination", "Speed", "AngularSpeed" }, null, null, null, null)
           }));
     }
     #endregion
@@ -54,7 +54,7 @@ namespace Inhumate.Unity.RTI.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Inhumate.Unity.RTI.Proto.NavMeshAgentStateReflection.Descriptor.MessageTypes[0]; }
+      get { return global::Inhumate.UnityRTI.Proto.NavMeshAgentStateReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -101,10 +101,10 @@ namespace Inhumate.Unity.RTI.Proto {
 
     /// <summary>Field number for the "destination" field.</summary>
     public const int DestinationFieldNumber = 2;
-    private global::Inhumate.Unity.RTI.Proto.Vector3 destination_;
+    private global::Inhumate.UnityRTI.Proto.Vector3 destination_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Inhumate.Unity.RTI.Proto.Vector3 Destination {
+    public global::Inhumate.UnityRTI.Proto.Vector3 Destination {
       get { return destination_; }
       set {
         destination_ = value;
@@ -264,7 +264,7 @@ namespace Inhumate.Unity.RTI.Proto {
       }
       if (other.destination_ != null) {
         if (destination_ == null) {
-          Destination = new global::Inhumate.Unity.RTI.Proto.Vector3();
+          Destination = new global::Inhumate.UnityRTI.Proto.Vector3();
         }
         Destination.MergeFrom(other.Destination);
       }
@@ -295,7 +295,7 @@ namespace Inhumate.Unity.RTI.Proto {
           }
           case 18: {
             if (destination_ == null) {
-              Destination = new global::Inhumate.Unity.RTI.Proto.Vector3();
+              Destination = new global::Inhumate.UnityRTI.Proto.Vector3();
             }
             input.ReadMessage(Destination);
             break;
@@ -329,7 +329,7 @@ namespace Inhumate.Unity.RTI.Proto {
           }
           case 18: {
             if (destination_ == null) {
-              Destination = new global::Inhumate.Unity.RTI.Proto.Vector3();
+              Destination = new global::Inhumate.UnityRTI.Proto.Vector3();
             }
             input.ReadMessage(Destination);
             break;

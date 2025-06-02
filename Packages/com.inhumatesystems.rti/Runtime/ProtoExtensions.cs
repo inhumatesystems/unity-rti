@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     public static class ProtoExtensions {
         public static Proto.Vector3 ToProto(this Vector3 vector) {

@@ -5,7 +5,7 @@ using Inhumate.RTI.Proto;
 using UnityEngine;
 using UnityEngine.Splines;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     public class RTIStaticGeometry : RTIGeometry {
 

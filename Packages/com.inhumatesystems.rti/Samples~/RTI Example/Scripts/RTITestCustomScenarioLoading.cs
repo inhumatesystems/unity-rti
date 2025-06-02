@@ -1,4 +1,4 @@
-﻿using Inhumate.Unity.RTI;
+﻿using Inhumate.UnityRTI;
 using UnityEngine;
 
 public class RTITestCustomScenarioLoading : MonoBehaviour {

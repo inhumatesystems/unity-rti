@@ -10,11 +10,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Reflection;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     public class RTIConnection : MonoBehaviour {
 
-        public const string IntegrationVersion = "1.0.6";
+        public const string IntegrationVersion = "1.1.0";
 
         public bool autoConnect = true;
 

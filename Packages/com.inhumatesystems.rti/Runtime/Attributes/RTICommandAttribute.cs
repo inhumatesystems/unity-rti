@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class RTICommandAttribute : Attribute {

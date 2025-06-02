@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Inhumate.RTI.Proto;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class RTICommandArgumentAttribute : Attribute {

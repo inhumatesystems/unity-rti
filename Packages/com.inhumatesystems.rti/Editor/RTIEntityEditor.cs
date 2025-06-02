@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using NaughtyAttributes.Editor;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [CustomEditor(typeof(RTIEntity))]
     public class RTIEntityEditor : NaughtyInspector {

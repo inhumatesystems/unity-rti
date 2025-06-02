@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [CreateAssetMenu(fileName = "Scenario", menuName = "RTI/Scenario")]
     public class RTIScenario : ScriptableObject {

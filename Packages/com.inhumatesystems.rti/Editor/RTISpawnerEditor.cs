@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using NaughtyAttributes.Editor;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [CustomEditor(typeof(RTISpawner))]
     public class RTISpawnerEditor : NaughtyInspector {

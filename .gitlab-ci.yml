@@ -23,7 +23,7 @@ build:
     - apt-get -qq update && apt-get -qq install unzip
     - sed -i "s/PROJECT_ID/${REGISTRY_PROJECT_ID}/g" Packages/*inhumate*/package.json
     - scripts/ci-before-script.sh
-    # - scripts/linux_get_protobuf.sh
+    # - scripts/get_protobuf.sh
     # - scripts/generate.sh
     - scripts/build.sh
   cache:

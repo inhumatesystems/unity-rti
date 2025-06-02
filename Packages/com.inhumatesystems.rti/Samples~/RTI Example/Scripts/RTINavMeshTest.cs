@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using Inhumate.Unity.RTI;
+using Inhumate.UnityRTI;
 
 namespace Inhumate.Unity.Examples.RTI {
 

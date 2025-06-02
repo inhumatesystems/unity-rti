@@ -8,7 +8,7 @@ using Inhumate.RTI.Proto;
 using UnityEngine;
 using NaughtyAttributes;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     public class RTIEntity : MonoBehaviour {
 

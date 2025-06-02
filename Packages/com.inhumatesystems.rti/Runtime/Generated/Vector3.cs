@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace Inhumate.Unity.RTI.Proto {
+namespace Inhumate.UnityRTI.Proto {
 
   /// <summary>Holder for reflection information generated from Vector3.proto</summary>
   public static partial class Vector3Reflection {
@@ -30,7 +30,7 @@ namespace Inhumate.Unity.RTI.Proto {
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Inhumate.Unity.RTI.Proto.Vector3), global::Inhumate.Unity.RTI.Proto.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Inhumate.UnityRTI.Proto.Vector3), global::Inhumate.UnityRTI.Proto.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null)
           }));
     }
     #endregion
@@ -51,7 +51,7 @@ namespace Inhumate.Unity.RTI.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Inhumate.Unity.RTI.Proto.Vector3Reflection.Descriptor.MessageTypes[0]; }
+      get { return global::Inhumate.UnityRTI.Proto.Vector3Reflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

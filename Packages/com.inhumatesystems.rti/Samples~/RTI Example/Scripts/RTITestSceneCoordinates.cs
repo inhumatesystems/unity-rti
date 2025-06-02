@@ -2,7 +2,7 @@
 // This demonstrates how to provide custom functions for converting between
 // local and geodetic coordinates, which is typically scene dependent
 
-using Inhumate.Unity.RTI;
+using Inhumate.UnityRTI;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 

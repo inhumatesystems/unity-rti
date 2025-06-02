@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     // Trigger (using a collider with isTrigger=true) an injectable to start or end
     public class RTIInjectableTrigger : RTIInjectionBehaviour {

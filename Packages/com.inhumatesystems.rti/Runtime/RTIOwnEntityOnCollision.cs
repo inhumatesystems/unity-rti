@@ -2,7 +2,7 @@ using Inhumate.RTI;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [RequireComponent(typeof(RTIEntity))]
     public class RTIOwnEntityOnCollision : MonoBehaviour {

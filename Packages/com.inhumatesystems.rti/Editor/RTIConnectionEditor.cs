@@ -5,7 +5,7 @@ using UnityEditor;
 using Inhumate.RTI;
 using NaughtyAttributes.Editor;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [CustomEditor(typeof(RTIConnection))]
     public class RTIConnectionEditor : NaughtyInspector {

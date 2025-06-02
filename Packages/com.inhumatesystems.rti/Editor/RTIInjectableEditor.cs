@@ -3,7 +3,7 @@ using UnityEditor;
 using Inhumate.RTI.Proto;
 using NaughtyAttributes.Editor;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [CustomEditor(typeof(RTIInjectable))]
     public class RTIInjectableEditor : NaughtyInspector {

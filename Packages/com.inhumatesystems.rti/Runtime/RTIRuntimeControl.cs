@@ -1,7 +1,7 @@
 using Inhumate.RTI;
 using Inhumate.RTI.Proto;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
     public class RTIRuntimeControl {
 
         protected static RTIConnection RTI => RTIConnection.Instance;

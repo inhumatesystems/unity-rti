@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
 public class RTITestScenarioParameter : MonoBehaviour {
 

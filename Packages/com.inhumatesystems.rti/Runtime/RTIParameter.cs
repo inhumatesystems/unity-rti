@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using NaughtyAttributes;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [Serializable]
     public class RTIParameter {

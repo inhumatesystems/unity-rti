@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Inhumate.Unity.RTI;
+using Inhumate.UnityRTI;
 
 public class FooDTO {
     public string Foo;

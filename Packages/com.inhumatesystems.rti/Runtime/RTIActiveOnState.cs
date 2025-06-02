@@ -1,7 +1,7 @@
 using Inhumate.RTI.Proto;
 using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     public class RTIActiveOnState : MonoBehaviour {
 

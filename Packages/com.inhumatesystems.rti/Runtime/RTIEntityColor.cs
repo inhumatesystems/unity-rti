@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     // Sets a renderer material color according to its entity metadata
 

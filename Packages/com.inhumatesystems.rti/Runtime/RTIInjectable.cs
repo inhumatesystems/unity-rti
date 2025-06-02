@@ -7,7 +7,7 @@ using System;
 using Inhumate.RTI;
 using System.Linq;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
     public class RTIInjectable : MonoBehaviour {
 
         public Injectable.Types.ControlMode startMode;

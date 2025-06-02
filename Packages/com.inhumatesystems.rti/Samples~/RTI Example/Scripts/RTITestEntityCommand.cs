@@ -1,4 +1,4 @@
-using Inhumate.Unity.RTI;
+using Inhumate.UnityRTI;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 

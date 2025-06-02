@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Inhumate.RTI;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     [RequireComponent(typeof(NavMeshAgent))]
     public class RTINavMeshAgent : RTIEntityStateBehaviour<Proto.NavMeshAgentState> {

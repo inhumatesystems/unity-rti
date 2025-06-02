@@ -4,7 +4,7 @@ using UnityEngine;
 using Inhumate.RTI.Proto;
 using Inhumate.RTI;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     public abstract class RTIInjectionBehaviour : MonoBehaviour {
 

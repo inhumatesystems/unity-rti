@@ -1,6 +1,6 @@
 using UnityEngine;
 using Inhumate.RTI.Proto;
-using Inhumate.Unity.RTI;
+using Inhumate.UnityRTI;
 
 namespace Inhumate.Unity.Examples.RTI {
 

@@ -5,7 +5,7 @@ using Inhumate.RTI;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
 
     public class RTISpawner : RTIBehaviour<Entity> {
         public override string ChannelName => RTIChannel.Entity;

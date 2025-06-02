@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
     public class RTIInjectableActivator : RTIInjectionBehaviour {
 
         public GameObject[] objects;

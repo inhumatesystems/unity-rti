@@ -5,7 +5,7 @@ using Inhumate.RTI.Proto;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
     public class RTIRuntimeControlBackupUI : MonoBehaviour {
 
         public bool editorOnly = true;

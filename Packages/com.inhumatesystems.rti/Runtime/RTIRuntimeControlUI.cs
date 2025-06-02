@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using Inhumate.RTI.Proto;
 using UnityEngine.SceneManagement;
 
-namespace Inhumate.Unity.RTI {
+namespace Inhumate.UnityRTI {
     public class RTIRuntimeControlUI : MonoBehaviour {
 
         public bool controlsEditorOnly = true;
