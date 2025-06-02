@@ -3,22 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using Inhumate.UnityRTI;
 
-public class RTITestListener : RTITextBehaviour
-{
-    public override string ChannelName => "foo";
+namespace Inhumate.UnityRTI.Example {
 
-    protected override void OnMessage(string message) {
-        Debug.Log($"Received foo: {message}");
-    }
+    public class RTITestListener : RTITextBehaviour {
+        public override string ChannelName => "foo";
 
-    void Awake()
-    {
-        RTI.WhenConnected(() => {
-            Debug.Log("Connected", this);
-        });
-        RTI.WhenConnectedOnce(() => {
-            Debug.Log("Connected once", this);
-        });
+        protected override void OnMessage(string message) {
+            Debug.Log($"Received foo: {message}");
+        }
+
+        void Awake() {
+            RTI.WhenConnected(() => {
+                Debug.Log("Connected", this);
+            });
+            RTI.WhenConnectedOnce(() => {
+                Debug.Log("Connected once", this);
+            });
+        }
+
     }
 
 }

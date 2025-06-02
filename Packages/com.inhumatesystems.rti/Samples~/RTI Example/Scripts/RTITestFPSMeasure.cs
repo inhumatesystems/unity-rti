@@ -2,7 +2,7 @@ using UnityEngine;
 using Inhumate.RTI.Proto;
 using Inhumate.UnityRTI;
 
-namespace Inhumate.Unity.Examples.RTI {
+namespace Inhumate.UnityRTI.Example {
 
     public class RTITestFPSMeasure : RTIMeasure {
 

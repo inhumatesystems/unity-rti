@@ -1,33 +1,37 @@
 ﻿using Inhumate.UnityRTI;
 using UnityEngine;
 
-public class RTITestCustomScenarioLoading : MonoBehaviour {
+namespace Inhumate.UnityRTI.Example {
 
-    public GameObject cube, sphere;
+    public class RTITestCustomScenarioLoading : MonoBehaviour {
 
-    protected RTIConnection RTI => RTIConnection.Instance;
+        public GameObject cube, sphere;
 
-    void Awake() {
-        // Specify scenarios that can be loaded
-        RTI.scenarioNames.Add("cube");
-        RTI.scenarioNames.Add("sphere");
-    }
+        protected RTIConnection RTI => RTIConnection.Instance;
 
-    void Start() {
-        // Override default scene loading
-        RTI.CustomLoadScenario += message => {
-            cube.SetActive(message.Name == "cube");
-            sphere.SetActive(message.Name == "sphere");
-        };
+        void Awake() {
+            // Specify scenarios that can be loaded
+            RTI.scenarioNames.Add("cube");
+            RTI.scenarioNames.Add("sphere");
+        }
 
-        // Override loading home scene on reset
-        RTI.CustomReset += delegate {
+        void Start() {
+            // Override default scene loading
+            RTI.CustomLoadScenario += message => {
+                cube.SetActive(message.Name == "cube");
+                sphere.SetActive(message.Name == "sphere");
+            };
+
+            // Override loading home scene on reset
+            RTI.CustomReset += delegate {
+                cube.SetActive(false);
+                sphere.SetActive(false);
+            };
+
             cube.SetActive(false);
             sphere.SetActive(false);
-        };
+        }
 
-        cube.SetActive(false);
-        sphere.SetActive(false);
     }
 
 }

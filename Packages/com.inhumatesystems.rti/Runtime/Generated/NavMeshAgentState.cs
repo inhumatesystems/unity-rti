@@ -24,12 +24,12 @@ namespace Inhumate.UnityRTI.Proto {
     static NavMeshAgentStateReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChdOYXZNZXNoQWdlbnRTdGF0ZS5wcm90bxIYaW5odW1hdGUudW5pdHkucnRp",
-            "LnByb3RvGg1WZWN0b3IzLnByb3RvIn0KEU5hdk1lc2hBZ2VudFN0YXRlEgoK",
-            "AmlkGAEgASgJEjYKC2Rlc3RpbmF0aW9uGAIgASgLMiEuaW5odW1hdGUudW5p",
-            "dHkucnRpLnByb3RvLlZlY3RvcjMSDQoFc3BlZWQYAyABKAISFQoNYW5ndWxh",
-            "cl9zcGVlZBgEIAEoAkIbqgIYSW5odW1hdGUuVW5pdHkuUlRJLlByb3RvYgZw",
-            "cm90bzM="));
+            "ChdOYXZNZXNoQWdlbnRTdGF0ZS5wcm90bxIXSW5odW1hdGUuVW5pdHlSVEku",
+            "cHJvdG8aDVZlY3RvcjMucHJvdG8ifAoRTmF2TWVzaEFnZW50U3RhdGUSCgoC",
+            "aWQYASABKAkSNQoLZGVzdGluYXRpb24YAiABKAsyIC5Jbmh1bWF0ZS5Vbml0",
+            "eVJUSS5wcm90by5WZWN0b3IzEg0KBXNwZWVkGAMgASgCEhUKDWFuZ3VsYXJf",
+            "c3BlZWQYBCABKAJCGqoCF0luaHVtYXRlLlVuaXR5UlRJLlByb3RvYgZwcm90",
+            "bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Inhumate.UnityRTI.Proto.Vector3Reflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {

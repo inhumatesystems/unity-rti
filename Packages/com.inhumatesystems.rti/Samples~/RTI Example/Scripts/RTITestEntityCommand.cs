@@ -2,7 +2,7 @@ using Inhumate.UnityRTI;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 
-namespace Inhumate.Unity.Examples.RTI {
+namespace Inhumate.UnityRTI.Example {
 
     [RequireComponent(typeof(RTIEntity))]
     public class RTITestEntityCommand : MonoBehaviour {

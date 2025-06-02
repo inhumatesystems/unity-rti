@@ -3,7 +3,7 @@ using Inhumate.UnityRTI;
 using Inhumate.RTI.Proto;
 using UnityEngine;
 
-namespace Inhumate.Unity.Examples.RTI {
+namespace Inhumate.UnityRTI.Example {
 
     public class RTITestPlayerController : MonoBehaviour {
 

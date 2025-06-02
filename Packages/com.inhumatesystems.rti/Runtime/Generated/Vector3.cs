@@ -24,9 +24,9 @@ namespace Inhumate.UnityRTI.Proto {
     static Vector3Reflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg1WZWN0b3IzLnByb3RvEhhpbmh1bWF0ZS51bml0eS5ydGkucHJvdG8iKgoH",
-            "VmVjdG9yMxIJCgF4GAEgASgCEgkKAXkYAiABKAISCQoBehgDIAEoAkIbqgIY",
-            "SW5odW1hdGUuVW5pdHkuUlRJLlByb3RvYgZwcm90bzM="));
+            "Cg1WZWN0b3IzLnByb3RvEhdJbmh1bWF0ZS5Vbml0eVJUSS5wcm90byIqCgdW",
+            "ZWN0b3IzEgkKAXgYASABKAISCQoBeRgCIAEoAhIJCgF6GAMgASgCQhqqAhdJ",
+            "bmh1bWF0ZS5Vbml0eVJUSS5Qcm90b2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {

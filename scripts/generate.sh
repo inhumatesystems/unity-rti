@@ -1,21 +1,15 @@
-#!/bin/bash -e
-
-cd "$(dirname $0)/.."
-
-if [ -e protobuf/bin/protoc ]; then
-    exit 0
+#!/usr/bin/env sh
+cd "$(dirname $0)"
+rm -rf ../Packages/com.inhumatesystems.rti/Runtime/Generated/*
+mkdir -p ../Packages/com.inhumatesystems.rti/Runtime/Generated
+protoc=protoc
+if [ -e "../protobuf/bin/protoc" ]; then
+    protoc="../protobuf/bin/protoc"
+elif [ -e "../protobuf/bin/protoc.exe" ]; then
+    protoc="../protobuf/bin/protoc.exe"
 fi
-
-if [ "$(uname -o)" == "Msys" ]; then
-    path="v23.3/protoc-23.3-win64.zip"
-elif [ "$(uname -o)" == "Darwin" ]; then
-    path="v23.3/protoc-23.3-osx-universal_binary.zip"
-else
-    path="v23.3/protoc-23.3-linux-x86_64.zip"
-fi
-
-mkdir -p protobuf
-cd protobuf
-curl -L "https://github.com/protocolbuffers/protobuf/releases/download/$path" -o protoc.zip
-unzip protoc.zip
-rm -f protoc.zip
+echo "Using $protoc"
+$protoc \
+    --csharp_out=../Packages/com.inhumatesystems.rti/Runtime/Generated \
+    --proto_path=../proto/ \
+    ../proto/*.proto

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Inhumate.UnityRTI;
 
-namespace Inhumate.Unity.Examples.RTI {
+namespace Inhumate.UnityRTI.Example {
 
     [RequireComponent(typeof(RTIEntity))]
     [RequireComponent(typeof(NavMeshAgent))]

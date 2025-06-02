@@ -3,24 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using Inhumate.UnityRTI;
 
-public class FooDTO {
-    public string Foo;
-    public int Bar;
-}
+namespace Inhumate.UnityRTI.Example {
 
-public class RTIJsonTestListener : RTIJsonBehaviour<FooDTO>
-{
-    public override string ChannelName => "foojson";
-
-    protected override void OnMessage(FooDTO message) {
-        Debug.Log($"Received foojson: {message.Foo} {message.Bar}");
+    public class FooDTO {
+        public string Foo;
+        public int Bar;
     }
 
-    void Awake()
-    {
-        RTI.WhenConnected(() => {
-            Publish(new FooDTO { Foo = "bar", Bar = 42 });
-        });
+    public class RTIJsonTestListener : RTIJsonBehaviour<FooDTO> {
+        public override string ChannelName => "foojson";
+
+        protected override void OnMessage(FooDTO message) {
+            Debug.Log($"Received foojson: {message.Foo} {message.Bar}");
+        }
+
+        void Awake() {
+            RTI.WhenConnected(() => {
+                Publish(new FooDTO { Foo = "bar", Bar = 42 });
+            });
+        }
+
     }
 
 }

@@ -5,7 +5,7 @@ using Inhumate.UnityRTI;
 using Inhumate.RTI.Proto;
 using Inhumate.RTI;
 
-namespace Inhumate.Unity.Examples.RTI {
+namespace Inhumate.UnityRTI.Example {
 
     public class RTITestCommand : MonoBehaviour {
         protected RTIConnection RTI => RTIConnection.Instance;
