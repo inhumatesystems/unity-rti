@@ -53,6 +53,7 @@ namespace Inhumate.UnityRTI {
         Integer,
         Switch,
         Checkbox,
-        Choice
+        Choice,
+        Lonlat
     }
 }
