@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
@@ -364,6 +364,8 @@ namespace Inhumate.UnityRTI {
                         Blue = (int)Math.Round(color.b * 255)
                     };
                 }
+                var positionComponent = GetComponent<RTIPosition>();
+
                 return new Entity {
                     Id = id,
                     OwnerClientId = RTI.ClientId,
@@ -385,7 +387,11 @@ namespace Inhumate.UnityRTI {
                         },
                     Color = col,
                     Title = titleFromName ? name.Replace("(Clone)", "") : !string.IsNullOrWhiteSpace(title) ? title : "",
-                    Position = GetComponent<RTIPosition>() != null ? RTIPosition.PositionMessageFromTransform(this.transform) : null,
+                    Position = positionComponent != null && positionComponent.lastPublishedPosition != null
+                        ? positionComponent.lastPublishedPosition 
+                        : positionComponent != null 
+                        ? RTIPosition.PositionMessageFromTransform(this.transform) 
+                        : null,
                     Disabled = !enabled || !gameObject.activeInHierarchy,
                     Deleted = deleted
                 };

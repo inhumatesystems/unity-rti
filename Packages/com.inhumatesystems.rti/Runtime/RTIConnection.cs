@@ -357,7 +357,7 @@ namespace Inhumate.UnityRTI {
         }
 
         private void QueryPersistenGeometryOwner() {
-            Publish(RTIChannel.Geometry, new GeometryOperation {
+            Publish(RTIChannel.GeometryOperation, new GeometryOperation {
                 RequestPersistentOwnership = new GeometryOperation.Types.ApplicationClient {
                     Application = rti.Application,
                     ClientId = rti.ClientId

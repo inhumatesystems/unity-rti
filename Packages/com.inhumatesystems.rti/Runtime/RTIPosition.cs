@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Inhumate.RTI.Proto;
 using Inhumate.RTI;
 using UnityEngine;
@@ -37,6 +37,7 @@ namespace Inhumate.UnityRTI {
 
         public override string ChannelName => RTIChannel.Position;
 
+        public EntityPosition lastPublishedPosition { get; private set; }
         private float lastPublishTime;
         private float lastPositionTime = -1f;
         private float previousPositionTime = -1f;
@@ -197,6 +198,7 @@ namespace Inhumate.UnityRTI {
                     lastAngularVelocity = Vector3.zero;
                 }
                 Publish(position);
+                lastPublishedPosition = position;
                 lastPosition = transform.position;
                 lastPositionTime = Time.fixedTime;
                 lastRotation = transform.rotation;
