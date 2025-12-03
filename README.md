@@ -26,7 +26,7 @@ See the section [Installing a UPM package from a local tarball file](https://doc
 
 This package uses the brilliant NaughtyAttributes package. 
 If you install via OpenUPM it should be solved automatically.
-For local tarball or asset store version, the dependency is bundled.
+For the asset store version, the dependency is bundled.
 
 If you need to, you can get NaughtyAttributes from [OpenUPM](https://openupm.com/packages/com.dbrizov.naughtyattributes/) or [Unity Asset Store](https://assetstore.unity.com/packages/tools/utilities/naughtyattributes-129996), or directly from github, by adding this line to your `manifest.json` dependencies:
 

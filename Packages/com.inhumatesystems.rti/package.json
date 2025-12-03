@@ -2,7 +2,7 @@
   "name": "com.inhumatesystems.rti",
   "displayName": "Inhumate RTI",
   "description": "Inhumate RTI Client - for multiplayer networking, co-simulation etc",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "unity": "2018.3",
   "documentationUrl": "https://gitlab.com/inhumate/rti/-/wikis/Unity",
   "changelogUrl": "https://gitlab.com/inhumate/rti/activity",
@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "com.dbrizov.naughtyattributes": "2.1.4",
-    "com.unity.splines": "2.8.0"
+    "com.unity.splines": "1.0.1"
   },
   "publishConfig": {
     "registry": "https://gitlab.com/api/v4/projects/PROJECT_ID/packages/npm/"
