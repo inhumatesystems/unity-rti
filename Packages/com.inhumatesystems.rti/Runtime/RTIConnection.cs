@@ -1103,7 +1103,7 @@ namespace Inhumate.UnityRTI {
         }
 
         void Update() {
-            if (rti != null) {
+            if (rti != null && rti.Polling) {
                 pollCount = rti.Poll(maxPollCount);
             }
             if (rti != null && (rti.State == RuntimeState.Running || rti.State == RuntimeState.Playback || rti.State == RuntimeState.Unknown)) {
