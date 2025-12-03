@@ -30,11 +30,11 @@ rm -rf Build
 mkdir -p Build/package
 cp -rfp Packages/$package/* Build/package/
 
-# Remove naughty attributes from package.json - to allow for asset store version or other source...
-cat Packages/$package/package.json | grep -v naughtyattributes > Build/package/package.json
-# And bundle it for asset store...
-cd Build/package/Plugins
-git clone -b upm https://github.com/dbrizov/NaughtyAttributes.git
-cd ../..
+# # Remove naughty attributes from package.json - to allow for asset store version or other source...
+# cat Packages/$package/package.json | grep -v naughtyattributes > Build/package/package.json
+# # And bundle it for asset store...
+# cd Build/package/Plugins
+# git clone -b upm https://github.com/dbrizov/NaughtyAttributes.git
+# cd ../..
 
 tar cfz $filename.tgz package

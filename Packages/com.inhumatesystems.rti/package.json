@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "com.dbrizov.naughtyattributes": "2.1.4",
-    "com.unity.splines": "1.0.1"
+    "com.unity.splines": "2.8.0"
   },
   "publishConfig": {
     "registry": "https://gitlab.com/api/v4/projects/PROJECT_ID/packages/npm/"
