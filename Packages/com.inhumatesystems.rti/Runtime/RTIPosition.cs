@@ -173,7 +173,7 @@ namespace Inhumate.UnityRTI {
                     if (LocalToRTIVelocity != null) {
                         position.Velocity = LocalToRTIVelocity(localVelocity.Value);
                         lastAngularVelocity = Vector3.zero;
-                    } else if (UseLocalCoordinates) {
+                    } else {
                         position.Velocity = new EntityPosition.Types.VelocityVector {
                             Forward = localVelocity.Value.z,
                             Up = localVelocity.Value.y,
@@ -186,7 +186,7 @@ namespace Inhumate.UnityRTI {
                     Vector3 localAngularVelocity = transform.InverseTransformDirection(body.angularVelocity) * 180.0f / Mathf.PI;
                     if (LocalToRTIAngularVelocity != null) {
                         position.AngularVelocity = LocalToRTIAngularVelocity(localAngularVelocity);
-                    } else if (UseLocalCoordinates) {
+                    } else {
                         position.AngularVelocity = new EntityPosition.Types.EulerRotation {
                             Roll = -localAngularVelocity.z,
                             Pitch = -localAngularVelocity.x,
