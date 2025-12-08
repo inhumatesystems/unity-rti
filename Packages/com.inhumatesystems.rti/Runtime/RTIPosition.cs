@@ -75,7 +75,7 @@ namespace Inhumate.UnityRTI {
         protected override void OnMessage(EntityPosition position) {
             receiveCount++;
             if (!receive || !receiving || !enabled) return;
-            if (position.Local != null) {
+            if (position.Local != null && UseLocalCoordinates) {
                 previousPositionTime = lastPositionTime;
                 previousPosition = lastPosition;
                 lastPositionTime = Time.time;
@@ -97,7 +97,7 @@ namespace Inhumate.UnityRTI {
                     warnedGeodetic = true;
                 }
             }
-            if (position.LocalRotation != null) {
+            if (position.LocalRotation != null && UseLocalCoordinates) {
                 previousRotationTime = lastRotationTime;
                 previousRotation = lastRotation;
                 lastRotationTime = Time.time;
@@ -154,13 +154,13 @@ namespace Inhumate.UnityRTI {
             Vector3? localVelocity = null;
             if (body != null && !body.isKinematic) {
                 localVelocity = transform.InverseTransformDirection(body.velocity);
-            } else if (lastVelocityPosition.sqrMagnitude > float.Epsilon && lastVelocityTime > float.Epsilon && Time.fixedTime > lastVelocityTime) {
+            } else if (CalculateTransformBasedVelocity && lastVelocityPosition.sqrMagnitude > float.Epsilon && lastVelocityTime > float.Epsilon && Time.fixedTime > lastVelocityTime) {
                 Vector3 velocity = (transform.position - lastVelocityPosition) / (Time.fixedTime - lastVelocityTime);
                 localVelocity = transform.InverseTransformDirection(velocity);
             }
 
             if (publish && publishing && Time.fixedTime - lastPublishTime > minPublishInterval
-                    && (Time.fixedTime - lastPublishTime > maxPublishInterval 
+                    && (Time.fixedTime - lastPublishTime > maxPublishInterval
                         || positionThreshold < float.Epsilon || rotationThreshold < float.Epsilon || velocityThreshold < float.Epsilon
                         || (transform.position - lastPosition).magnitude > positionThreshold
                         || Quaternion.Angle(transform.rotation, lastRotation) > rotationThreshold
@@ -173,7 +173,7 @@ namespace Inhumate.UnityRTI {
                     if (LocalToRTIVelocity != null) {
                         position.Velocity = LocalToRTIVelocity(localVelocity.Value);
                         lastAngularVelocity = Vector3.zero;
-                    } else {
+                    } else if (UseLocalCoordinates) {
                         position.Velocity = new EntityPosition.Types.VelocityVector {
                             Forward = localVelocity.Value.z,
                             Up = localVelocity.Value.y,
@@ -186,7 +186,7 @@ namespace Inhumate.UnityRTI {
                     Vector3 localAngularVelocity = transform.InverseTransformDirection(body.angularVelocity) * 180.0f / Mathf.PI;
                     if (LocalToRTIAngularVelocity != null) {
                         position.AngularVelocity = LocalToRTIAngularVelocity(localAngularVelocity);
-                    } else {
+                    } else if (UseLocalCoordinates) {
                         position.AngularVelocity = new EntityPosition.Types.EulerRotation {
                             Roll = -localAngularVelocity.z,
                             Pitch = -localAngularVelocity.x,
@@ -258,7 +258,7 @@ namespace Inhumate.UnityRTI {
             var position = new EntityPosition();
             if (LocalToRTIPosition != null) {
                 position.Local = LocalToRTIPosition(transform.position);
-            } else {
+            } else if (UseLocalCoordinates) {
                 position.Local = new EntityPosition.Types.LocalPosition {
                     X = transform.position.x,
                     Y = transform.position.y,
@@ -268,12 +268,14 @@ namespace Inhumate.UnityRTI {
             if (LocalToRTIEuler != null) {
                 position.EulerRotation = LocalToRTIEuler(transform.rotation);
             } else {
-                position.LocalRotation = new EntityPosition.Types.LocalRotation {
-                    X = transform.rotation.x,
-                    Y = transform.rotation.y,
-                    Z = transform.rotation.z,
-                    W = transform.rotation.w
-                };
+                if (UseLocalCoordinates) {
+                    position.LocalRotation = new EntityPosition.Types.LocalRotation {
+                        X = transform.rotation.x,
+                        Y = transform.rotation.y,
+                        Z = transform.rotation.z,
+                        W = transform.rotation.w
+                    };
+                }
                 position.EulerRotation = new EntityPosition.Types.EulerRotation {
                     Roll = -euler.z,
                     Pitch = -euler.x,
@@ -339,6 +341,9 @@ namespace Inhumate.UnityRTI {
 
         public delegate Vector3 RTIToLocalAngularVelocityConversion(EntityPosition.Types.EulerRotation angularEuler);
         public static RTIToLocalAngularVelocityConversion RTIToLocalAngularVelocity;
+
+        public static bool CalculateTransformBasedVelocity = true;
+        public static bool UseLocalCoordinates = true;
 
     }
 

@@ -78,7 +78,7 @@ namespace Inhumate.UnityRTI {
 
         internal override Geometry GeometryData {
             get {
-                useLocalCoordinates = coordinates == Coordinates.LocalAndGeodetic || coordinates == Coordinates.Local;
+                useLocalCoordinates = RTIPosition.UseLocalCoordinates && (coordinates == Coordinates.LocalAndGeodetic || coordinates == Coordinates.Local);
                 useGeodeticCoordinates = coordinates == Coordinates.LocalAndGeodetic || coordinates == Coordinates.Geodetic;
                 var geometry = new Geometry {
                     Id = Id,

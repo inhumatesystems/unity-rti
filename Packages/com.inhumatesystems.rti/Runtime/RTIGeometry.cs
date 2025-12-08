@@ -89,10 +89,18 @@ namespace Inhumate.UnityRTI {
         protected Geometry.Types.Point2D CreatePoint2D(Vector3 position) {
             var point = new Geometry.Types.Point2D();
             if (useLocalCoordinates) {
-                point.Local = new Geometry.Types.LocalPoint2D {
-                    X = position.x,
-                    Y = position.z
-                };
+                if (RTIPosition.LocalToRTIPosition != null) {
+                    var rtipos = RTIPosition.LocalToRTIPosition(position);
+                    point.Local = new Geometry.Types.LocalPoint2D {
+                        X = rtipos.X,
+                        Y = rtipos.Z
+                    };
+                } else {
+                    point.Local = new Geometry.Types.LocalPoint2D {
+                        X = position.x,
+                        Y = position.z
+                    };
+                }
             }
             if (useGeodeticCoordinates && RTIPosition.LocalToGeodetic != null) {
                 point.Geodetic = GeodeticPoint2D(RTIPosition.LocalToGeodetic(position));
@@ -103,11 +111,20 @@ namespace Inhumate.UnityRTI {
         protected Geometry.Types.Point3D CreatePoint3D(Vector3 position) {
             var point = new Geometry.Types.Point3D();
             if (useLocalCoordinates) {
-                point.Local = new Geometry.Types.LocalPoint3D {
-                    X = position.x,
-                    Y = position.y,
-                    Z = position.z
-                };
+                if (RTIPosition.LocalToRTIPosition != null) {
+                    var rtipos = RTIPosition.LocalToRTIPosition(position);
+                    point.Local = new Geometry.Types.LocalPoint3D {
+                        X = rtipos.X,
+                        Y = rtipos.Y,
+                        Z = rtipos.Z
+                    };
+                } else {
+                    point.Local = new Geometry.Types.LocalPoint3D {
+                        X = position.x,
+                        Y = position.y,
+                        Z = position.z
+                    };
+                }
             }
             if (useGeodeticCoordinates && RTIPosition.LocalToGeodetic != null) {
                 point.Geodetic = GeodeticPoint3D(RTIPosition.LocalToGeodetic(position));
@@ -230,11 +247,20 @@ namespace Inhumate.UnityRTI {
                 foreach (var point in inmesh.vertices) {
                     var tpoint = meshFilter.transform.TransformPoint(point);
                     if (local && transform.parent != null) tpoint = transform.parent.InverseTransformPoint(tpoint);
-                    outmesh.Vertices.Add(new Geometry.Types.LocalPoint3D {
-                        X = tpoint.x,
-                        Y = tpoint.y,
-                        Z = tpoint.z
-                    });
+                    if (RTIPosition.LocalToRTIPosition != null) {
+                        var rtipos = RTIPosition.LocalToRTIPosition(tpoint);
+                        outmesh.Vertices.Add(new Geometry.Types.LocalPoint3D {
+                            X = rtipos.X,
+                            Y = rtipos.Y,
+                            Z = rtipos.Z
+                        });
+                    } else {
+                        outmesh.Vertices.Add(new Geometry.Types.LocalPoint3D {
+                            X = tpoint.x,
+                            Y = tpoint.y,
+                            Z = tpoint.z
+                        });
+                    }
                 }
                 foreach (var index in inmesh.triangles) {
                     outmesh.Indices.Add(offset + index);
