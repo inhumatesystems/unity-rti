@@ -24,7 +24,7 @@ echo "Using: $unity"
 
 set -e
 
-"$unity" -logFile -batchmode -nographics -quit -projectPath .
+"$unity" -logFile - -batchmode -nographics -quit -projectPath .
 
 rm -rf Build
 mkdir -p Build/package
