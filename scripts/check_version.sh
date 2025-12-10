@@ -12,6 +12,6 @@ if grep -q "\"version\": \"${version}\"" Packages/com.inhumatesystems.rti/packag
     grep -q "Version = \"${version}\"" Packages/com.inhumatesystems.rti/Runtime/RTIConnection.cs ; then
     echo "Version check ok"
 else
-    echo "Version check fail - fix package.json and RTIConnection.cs"
+    echo "Version check fail - update package.json and RTIConnection.cs to version ${version}"
     exit 1
 fi

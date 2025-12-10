@@ -14,7 +14,7 @@ namespace Inhumate.UnityRTI {
 
     public class RTIConnection : MonoBehaviour {
 
-        public const string IntegrationVersion = "1.1.3";
+        public const string IntegrationVersion = "1.1.4";
 
         public bool autoConnect = true;
 
@@ -599,10 +599,7 @@ namespace Inhumate.UnityRTI {
                         break;
                     }
             }
-            if (rti.State != lastState) OnStateChanged?.Invoke(rti.State);
-            lastState = rti.State;
         }
-        private RuntimeState lastState;
 
         private Dictionary<string, bool> mentionedScenario = new Dictionary<string, bool>();
 
@@ -1102,6 +1099,7 @@ namespace Inhumate.UnityRTI {
             OnDisconnected?.Invoke();
         }
 
+        private RuntimeState lastState;
         void Update() {
             if (rti != null && rti.Polling) {
                 pollCount = rti.Poll(maxPollCount);
@@ -1109,6 +1107,8 @@ namespace Inhumate.UnityRTI {
             if (rti != null && (rti.State == RuntimeState.Running || rti.State == RuntimeState.Playback || rti.State == RuntimeState.Unknown)) {
                 time += Time.deltaTime;
             }
+            if (rti.State != lastState) OnStateChanged?.Invoke(rti.State);
+            lastState = rti.State;
             if (_queued) {
                 lock (_backlog) {
                     var tmp = _actions;
