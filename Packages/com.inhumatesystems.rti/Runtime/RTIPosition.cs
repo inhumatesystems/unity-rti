@@ -41,14 +41,10 @@ namespace Inhumate.UnityRTI {
         private float lastPublishTime;
         private float lastPositionTime = -1f;
         private float previousPositionTime = -1f;
-        private Vector3 lastPosition;
-        private Vector3 previousPosition;
+        private EntityPosition lastPosition;
+        private EntityPosition previousPosition;
         private Vector3? lastVelocity;
         private Vector3? lastAcceleration;
-        private float lastRotationTime = -1f;
-        private float previousRotationTime = -1f;
-        private Quaternion lastRotation;
-        private Quaternion previousRotation;
         private Vector3? lastAngularVelocity;
         public long receiveCount { get; private set; }
 
@@ -59,10 +55,6 @@ namespace Inhumate.UnityRTI {
         protected override void Start() {
             base.Start();
             body = GetComponent<Rigidbody>();
-            lastPosition = transform.position;
-            lastRotation = transform.rotation;
-            lastPositionTime = Time.time;
-            lastRotationTime = Time.time;
             entity.OnUpdated += OnUpdated;
         }
 
@@ -75,44 +67,13 @@ namespace Inhumate.UnityRTI {
         protected override void OnMessage(EntityPosition position) {
             receiveCount++;
             if (!receive || !receiving || !enabled) return;
-            if (position.Local != null && UseLocalCoordinates) {
-                previousPositionTime = lastPositionTime;
-                previousPosition = lastPosition;
-                lastPositionTime = Time.time;
-                if (RTIToLocalPosition != null) {
-                    lastPosition = RTIToLocalPosition(position.Local);
-                } else {
-                    lastPosition = new Vector3(position.Local.X, position.Local.Y, position.Local.Z);
-                }
-                if (!interpolate || receiveCount == 1) transform.position = previousPosition = lastPosition;
-            } else if (position.Geodetic != null) {
-                if (GeodeticToLocal != null) {
-                    previousPositionTime = lastPositionTime;
-                    previousPosition = lastPosition;
-                    lastPositionTime = Time.time;
-                    lastPosition = GeodeticToLocal(position.Geodetic);
-                    if (!interpolate || receiveCount == 1) transform.position = previousPosition = lastPosition;
-                } else if (!warnedGeodetic) {
-                    Debug.LogWarning("Cannot use geodetic position, RTIPosition.GeodeticToLocal not set");
-                    warnedGeodetic = true;
-                }
-            }
-            if (position.LocalRotation != null && UseLocalCoordinates) {
-                previousRotationTime = lastRotationTime;
-                previousRotation = lastRotation;
-                lastRotationTime = Time.time;
-                lastRotation = new Quaternion(position.LocalRotation.X, position.LocalRotation.Y, position.LocalRotation.Z, position.LocalRotation.W);
-                if (!interpolate || receiveCount == 1) transform.rotation = previousRotation = lastRotation;
-            } else if (position.EulerRotation != null) {
-                previousRotationTime = lastRotationTime;
-                previousRotation = lastRotation;
-                lastRotationTime = Time.time;
-                if (RTIToLocalEuler != null) {
-                    lastRotation = RTIToLocalEuler(position.EulerRotation);
-                } else {
-                    lastRotation = Quaternion.Euler(-position.EulerRotation.Pitch, position.EulerRotation.Yaw, -position.EulerRotation.Roll);
-                }
-                if (!interpolate || receiveCount == 1) transform.rotation = previousRotation = lastRotation;
+            previousPositionTime = lastPositionTime;
+            previousPosition = lastPosition;
+            lastPositionTime = Time.time;
+            lastPosition = position;
+            if (!interpolate || receiveCount <= 1) {
+                transform.position = GetLocalPosition(position) ?? transform.position;
+                transform.rotation = GetLocalRotation(position) ?? transform.rotation;
             }
             if (position.Velocity != null) {
                 if (RTIToLocalVelocity != null) {
@@ -143,7 +104,7 @@ namespace Inhumate.UnityRTI {
             }
         }
 
-        private Vector3 lastVelocityPosition;
+        private EntityPosition lastVelocityPosition;
         private float lastVelocityTime;
 
         void FixedUpdate() {
@@ -154,21 +115,27 @@ namespace Inhumate.UnityRTI {
             Vector3? localVelocity = null;
             if (body != null && !body.isKinematic) {
                 localVelocity = transform.InverseTransformDirection(body.velocity);
-            } else if (CalculateTransformBasedVelocity && lastVelocityPosition.sqrMagnitude > float.Epsilon && lastVelocityTime > float.Epsilon && Time.fixedTime > lastVelocityTime) {
-                Vector3 velocity = (transform.position - lastVelocityPosition) / (Time.fixedTime - lastVelocityTime);
+            } else if (lastVelocityPosition != null && lastVelocityTime > float.Epsilon && Time.fixedTime > lastVelocityTime) {
+                Vector3 localLastVelocityPosition = GetLocalPosition(lastVelocityPosition) ?? transform.position;
+                Vector3 velocity = (transform.position - localLastVelocityPosition) / (Time.fixedTime - lastVelocityTime);
                 localVelocity = transform.InverseTransformDirection(velocity);
             }
 
+            Vector3 localLastPosition = GetLocalPosition(lastPosition) ?? transform.position;
+            Quaternion localLastRotation = GetLocalRotation(lastPosition) ?? transform.rotation;
+            Vector3 localPreviousPosition = GetLocalPosition(previousPosition) ?? localLastPosition;
+            Quaternion localPreviousRotation = GetLocalRotation(lastPosition) ?? localLastRotation;
+
+            var position = PositionMessageFromTransform(transform);
+            position.Id = entity.id;
             if (publish && publishing && Time.fixedTime - lastPublishTime > minPublishInterval
                     && (Time.fixedTime - lastPublishTime > maxPublishInterval
                         || positionThreshold < float.Epsilon || rotationThreshold < float.Epsilon || velocityThreshold < float.Epsilon
-                        || (transform.position - lastPosition).magnitude > positionThreshold
-                        || Quaternion.Angle(transform.rotation, lastRotation) > rotationThreshold
+                        || (transform.position - localLastPosition).magnitude > positionThreshold
+                        || Quaternion.Angle(transform.rotation, localLastRotation) > rotationThreshold
                         || (localVelocity.HasValue && lastVelocity.HasValue && (localVelocity.Value - lastVelocity.Value).magnitude > velocityThreshold)
                     )) {
                 lastPublishTime = Time.fixedTime;
-                var position = PositionMessageFromTransform(transform);
-                position.Id = entity.id;
                 if (localVelocity.HasValue) {
                     if (LocalToRTIVelocity != null) {
                         position.Velocity = LocalToRTIVelocity(localVelocity.Value);
@@ -199,58 +166,82 @@ namespace Inhumate.UnityRTI {
                 }
                 Publish(position);
                 lastPublishedPosition = position;
-                lastPosition = transform.position;
+                lastPosition = position;
                 lastPositionTime = Time.fixedTime;
-                lastRotation = transform.rotation;
-                lastRotationTime = Time.fixedTime;
             } else if (receive && receiving && interpolate) {
                 if (lastAcceleration.HasValue && lastVelocity.HasValue) {
                     lastVelocity += lastAcceleration * Time.deltaTime;
                 }
                 Vector3 targetPosition = transform.position;
+                Quaternion targetRotation = transform.rotation;
                 if (Time.fixedTime - lastPositionTime < maxInterpolateInterval) {
                     if (lastPositionTime > 0 && lastVelocity.HasValue) {
                         // Interpolate using velocity
-                        targetPosition = lastPosition + transform.TransformDirection(lastVelocity.Value * (Time.fixedTime - lastPositionTime));
+                        targetPosition = localLastPosition + transform.TransformDirection(lastVelocity.Value * (Time.fixedTime - lastPositionTime));
                     } else if (lastPositionTime > 0 && previousPositionTime > 0 && lastPositionTime - previousPositionTime > 1e-5f && lastPositionTime - previousPositionTime < minPublishInterval * 2.5f) {
                         // or else lerp based on last and previous position
-                        targetPosition = Vector3.Lerp(lastPosition, lastPosition + (lastPosition - previousPosition), (Time.fixedTime - lastPositionTime) / (lastPositionTime - previousPositionTime));
+                        targetPosition = Vector3.Lerp(localLastPosition, localLastPosition + (localLastPosition - localPreviousPosition), (Time.fixedTime - lastPositionTime) / (lastPositionTime - previousPositionTime));
                     } else if (lastPositionTime > 0) {
                         // or else just teleport
-                        targetPosition = lastPosition;
+                        targetPosition = localLastPosition;
+                    }
+                    if (lastPositionTime > 0 && lastAngularVelocity.HasValue) {
+                        // Interpolate using angular velocity
+                        targetRotation = Quaternion.Euler(lastAngularVelocity.Value * (Time.time - lastPositionTime)) * localLastRotation;
+                    } else if (lastPositionTime > 0 && previousPositionTime > 0 && lastPositionTime - previousPositionTime > 1e-5f && lastPositionTime - previousPositionTime < minPublishInterval * 2.5f) {
+                        // or else slerp based on last and previous rotation
+                        targetRotation = Quaternion.Slerp(localLastRotation, (localLastRotation * Quaternion.Inverse(localPreviousRotation)) * localLastRotation, (Time.time - lastPositionTime) / (lastPositionTime - previousPositionTime));
+                    } else if (lastPositionTime > 0) {
+                        // or else just set rotation
+                        targetRotation = localLastRotation;
                     }
                 } else {
-                    targetPosition = lastPosition;
+                    targetPosition = localLastPosition;
+                    targetRotation = localLastRotation;
                     lastVelocity = null;
                     lastAcceleration = null;
                     lastAngularVelocity = null;
                 }
                 transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * 10f / positionSmoothing);
-
-                Quaternion targetRotation = transform.rotation;
-                if (Time.fixedTime - lastRotationTime < maxInterpolateInterval) {
-                    if (lastRotationTime > 0 && lastAngularVelocity.HasValue) {
-                        // Interpolate using angular velocity
-                        targetRotation = Quaternion.Euler(lastAngularVelocity.Value * (Time.time - lastRotationTime)) * lastRotation;
-                    } else if (lastRotationTime > 0 && previousRotationTime > 0 && lastRotationTime - previousRotationTime > 1e-5f && lastRotationTime - previousRotationTime < minPublishInterval * 2.5f) {
-                        // or else slerp based on last and previous rotation
-                        targetRotation = Quaternion.Slerp(lastRotation, (lastRotation * Quaternion.Inverse(previousRotation)) * lastRotation, (Time.time - lastRotationTime) / (lastRotationTime - previousRotationTime));
-                    } else if (lastRotationTime > 0) {
-                        // or else just set rotation
-                        targetRotation = lastRotation;
-                    }
-                } else {
-                    targetRotation = lastRotation;
-                    lastVelocity = null;
-                    lastAcceleration = null;
-                    lastAngularVelocity = null;
-                }
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f / rotationSmoothing);
             }
             if (Time.fixedTime - lastVelocityTime >= 10 * Time.fixedDeltaTime || Time.fixedTime < lastVelocityTime) {
-                lastVelocityPosition = transform.position;
+                lastVelocityPosition = position;
                 lastVelocityTime = Time.fixedTime;
             }
+        }
+
+        public static Vector3? GetLocalPosition(EntityPosition position) {
+            if (position == null) return null;
+            if (position.Local != null && UseLocalCoordinates) {
+                if (RTIToLocalPosition != null) {
+                    return RTIToLocalPosition(position.Local);
+                } else {
+                    return new Vector3(position.Local.X, position.Local.Y, position.Local.Z);
+                }
+            } else if (position.Geodetic != null) {
+                if (GeodeticToLocal != null) {
+                    return GeodeticToLocal(position.Geodetic);
+                } else if (!warnedGeodetic) {
+                    Debug.LogWarning("Cannot use geodetic position, RTIPosition.GeodeticToLocal not set");
+                    warnedGeodetic = true;
+                }
+            }
+            return null;
+        }
+
+        public static Quaternion? GetLocalRotation(EntityPosition position) {
+            if (position == null) return null;
+            if (position.LocalRotation != null && UseLocalCoordinates) {
+                return new Quaternion(position.LocalRotation.X, position.LocalRotation.Y, position.LocalRotation.Z, position.LocalRotation.W);
+            } else if (position.EulerRotation != null) {
+                if (RTIToLocalEuler != null) {
+                    return RTIToLocalEuler(position.EulerRotation);
+                } else {
+                    return Quaternion.Euler(-position.EulerRotation.Pitch, position.EulerRotation.Yaw, -position.EulerRotation.Roll);
+                }
+            }
+            return null;
         }
 
         public static EntityPosition PositionMessageFromTransform(Transform transform) {
@@ -342,7 +333,6 @@ namespace Inhumate.UnityRTI {
         public delegate Vector3 RTIToLocalAngularVelocityConversion(EntityPosition.Types.EulerRotation angularEuler);
         public static RTIToLocalAngularVelocityConversion RTIToLocalAngularVelocity;
 
-        public static bool CalculateTransformBasedVelocity = true;
         public static bool UseLocalCoordinates = true;
 
     }

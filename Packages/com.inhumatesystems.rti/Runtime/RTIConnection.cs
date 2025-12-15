@@ -770,6 +770,11 @@ namespace Inhumate.UnityRTI {
             return null;
         }
 
+        public RTIEntity GetEntityByIdOrTitle(string idOrTitle) {
+            if (entities.ContainsKey(idOrTitle)) return entities[idOrTitle];
+            return entities.Values.FirstOrDefault(e => idOrTitle.ToLower() == e.title.ToLower());
+        }
+
         public IEnumerable<RTIEntity> GetEntitiesByType(string type) {
             return entities.Values.Where(entity => entity.EntityData.Type.ToLower() == type.ToLower());
         }
@@ -936,7 +941,12 @@ namespace Inhumate.UnityRTI {
                             specific = true;
                         }
                         if (commands.TryGetValue(name, out Command command) && commandHandlers.TryGetValue(name, out CommandHandler handler)) {
-                            response = handler(command, message.Execute);
+                            try {
+                                response = handler(command, message.Execute);
+                            } catch (Exception e) {
+                                Debug.LogException(e, this);
+                                response = new CommandResponse { Failed = true, Message = $"{e}" };
+                            }
                         } else if (specific) {
                             response = new CommandResponse { Failed = true, Message = $"Unknown command {name}" };
                         }

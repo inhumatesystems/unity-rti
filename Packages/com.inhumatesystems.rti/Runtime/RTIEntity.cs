@@ -19,6 +19,9 @@ namespace Inhumate.UnityRTI {
         public Vector3 center;
         public Vector3 size;
         public UnityEngine.Color color;
+        public string symbol;
+        public int symbolSize;
+        public bool symbolRotation;
         public bool titleFromName = true;
         [HideIf("titleFromName")]
         public string title;
@@ -386,6 +389,9 @@ namespace Inhumate.UnityRTI {
                             }
                         },
                     Color = col,
+                    Symbol = symbol,
+                    SymbolSize = symbolSize,
+                    SymbolRotation = symbolRotation,
                     Title = titleFromName ? name.Replace("(Clone)", "") : !string.IsNullOrWhiteSpace(title) ? title : "",
                     Position = positionComponent != null && positionComponent.lastPublishedPosition != null
                         ? positionComponent.lastPublishedPosition 
@@ -406,6 +412,8 @@ namespace Inhumate.UnityRTI {
             category = data.Category;
             domain = data.Domain;
             lvc = data.Lvc;
+            title = data.Title;
+            titleFromName = title == name;
             if (data.Dimensions != null) {
                 size = new Vector3(data.Dimensions.Width, data.Dimensions.Height, data.Dimensions.Length);
                 if (data.Dimensions.Center != null) {
@@ -415,6 +423,9 @@ namespace Inhumate.UnityRTI {
             if (data.Color != null) {
                 color = new UnityEngine.Color(data.Color.Red / 255f, data.Color.Green / 255f, data.Color.Blue / 255f, 1f);
             }
+            symbol = data.Symbol;
+            symbolSize = data.SymbolSize;
+            symbolRotation = data.SymbolRotation;
             if (data.Disabled && gameObject.activeInHierarchy) gameObject.SetActive(false);
             if (!data.Disabled && !gameObject.activeInHierarchy) gameObject.SetActive(true);
         }
