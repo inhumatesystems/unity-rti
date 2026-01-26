@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 884689043}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1623,6 +1622,9 @@ MonoBehaviour:
   center: {x: 0, y: 0, z: 0}
   size: {x: 0, y: 0, z: 0}
   color: {r: 0, g: 0, b: 0, a: 0}
+  symbol: 
+  symbolSize: 0
+  symbolRotation: 0
   titleFromName: 1
   title: 
   id: 
@@ -2486,104 +2488,99 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Spline:
     m_EditModeType: 1
-    m_Knots: []
-    m_MetaData: []
-    m_Closed: 0
-    m_IntData:
-      m_Data: []
-    m_FloatData:
-      m_Data: []
-    m_Float4Data:
-      m_Data: []
-    m_ObjectData:
-      m_Data: []
-  m_Splines:
-  - m_EditModeType: 1
     m_Knots:
     - Position:
-        x: -0.5
-        y: 0
-        z: -0.5
+        x: 0.06500006
+        y: -0.5
+        z: -0.13
       TangentIn:
         x: 0
         y: 0
-        z: -0.36
+        z: 0
       TangentOut:
         x: 0
         y: 0
-        z: 0.36
+        z: 0
       Rotation:
         value:
           x: 0
-          y: -0.38268352
+          y: 0.7508401
           z: 0
-          w: 0.9238796
+          w: -0.660484
     - Position:
-        x: -0.5
-        y: 0
-        z: 0.5
+        x: 1.115
+        y: -0.5
+        z: 0.005
       TangentIn:
-        x: 0
-        y: 0
-        z: -0.36
+        x: -0
+        y: -0
+        z: -0.38726634
       TangentOut:
         x: 0
         y: 0
-        z: 0.36
+        z: 0.38726634
       Rotation:
         value:
-          x: 0
-          y: 0.38268352
-          z: 0
-          w: 0.9238796
+          x: 2.832345e-25
+          y: 0.24396592
+          z: 6.3549994e-33
+          w: 0.96978384
     - Position:
-        x: 0.5
-        y: 0
-        z: 0.5
+        x: 1.1645
+        y: -0.5
+        z: 1.917
       TangentIn:
-        x: 0
-        y: 0
-        z: -0.36
+        x: -0
+        y: -0
+        z: -0.5680828
       TangentOut:
         x: 0
         y: 0
-        z: 0.36
+        z: 0.5680828
       Rotation:
         value:
-          x: 0
-          y: 0.9238796
-          z: 0
-          w: 0.3826835
+          x: 4.714572e-26
+          y: -0.43391135
+          z: -3.4202444e-33
+          w: 0.9009556
     - Position:
-        x: 0.5
-        y: 0
-        z: -0.5
+        x: -1.55
+        y: -0.5
+        z: 2.13
       TangentIn:
-        x: 0
-        y: 0
-        z: -0.36
+        x: -0
+        y: -0
+        z: -0.55879325
       TangentOut:
         x: 0
         y: 0
-        z: 0.36
+        z: 0.55879325
       Rotation:
         value:
-          x: 0
-          y: -0.9238796
-          z: 0
-          w: 0.3826835
-    m_MetaData: []
-    m_Closed: 1
-    m_IntData:
-      m_Data: []
-    m_FloatData:
-      m_Data: []
-    m_Float4Data:
-      m_Data: []
-    m_ObjectData:
-      m_Data: []
-  m_Knots:
-    m_KnotsLink: []
+          x: -1.5415943e-24
+          y: 0.8673693
+          z: -2.842146e-32
+          w: -0.49766508
+    - Position:
+        x: -1.73
+        y: -0.5
+        z: 0.225
+      TangentIn:
+        x: -0
+        y: -0
+        z: -0.63782847
+      TangentOut:
+        x: 0
+        y: 0
+        z: 0.63782847
+      Rotation:
+        value:
+          x: -2.613845e-19
+          y: 0.9988908
+          z: 5.5449577e-18
+          w: -0.047086842
+    m_Length: -1
+    m_Closed: 0
 --- !u!4 &1317606735
 Transform:
   m_ObjectHideFlags: 0
@@ -3742,6 +3739,9 @@ MonoBehaviour:
   center: {x: 0, y: 0, z: 0}
   size: {x: 1, y: 2, z: 1}
   color: {r: 0, g: 0, b: 0, a: 0}
+  symbol: 
+  symbolSize: 0
+  symbolRotation: 0
   titleFromName: 1
   title: 
   id: 
