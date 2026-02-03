@@ -38,9 +38,9 @@ namespace Inhumate.UnityRTI {
         public override string ChannelName => RTIChannel.Position;
 
         public EntityPosition lastPublishedPosition { get; private set; }
-        private float lastPublishTime;
-        private float lastPositionTime = -1f;
-        private float previousPositionTime = -1f;
+        private float lastPublishTime = -999f;
+        private float lastPositionTime = -999f;
+        private float previousPositionTime = -999f;
         private EntityPosition lastPosition;
         private EntityPosition previousPosition;
         private Vector3? lastVelocity;
@@ -128,6 +128,7 @@ namespace Inhumate.UnityRTI {
 
             var position = PositionMessageFromTransform(transform);
             position.Id = entity.id;
+            Debug.Log($"eeh {publish} {publishing} {Time.fixedTime - lastPublishTime > minPublishInterval} {Time.fixedTime - lastPublishTime > maxPublishInterval} {(transform.position - localLastPosition).magnitude > positionThreshold} {Quaternion.Angle(transform.rotation, localLastRotation) > rotationThreshold} {(localVelocity.HasValue && lastVelocity.HasValue && (localVelocity.Value - lastVelocity.Value).magnitude > velocityThreshold)}");    
             if (publish && publishing && Time.fixedTime - lastPublishTime > minPublishInterval
                     && (Time.fixedTime - lastPublishTime > maxPublishInterval
                         || positionThreshold < float.Epsilon || rotationThreshold < float.Epsilon || velocityThreshold < float.Epsilon
@@ -135,6 +136,7 @@ namespace Inhumate.UnityRTI {
                         || Quaternion.Angle(transform.rotation, localLastRotation) > rotationThreshold
                         || (localVelocity.HasValue && lastVelocity.HasValue && (localVelocity.Value - lastVelocity.Value).magnitude > velocityThreshold)
                     )) {
+                Debug.Log("ZE publishing");
                 lastPublishTime = Time.fixedTime;
                 if (localVelocity.HasValue) {
                     if (LocalToRTIVelocity != null) {
